@@ -53,4 +53,10 @@ func main() {
 	// TODO: on start ContainerLogs, get right Since param (based on last written file)
 	// TODO: retention by date
 	// TODO: retention by file size
+
+	// TODO: auth
+	// TODO: setting for beautifying container name
+	// TODO: search
+	// TODO: get
+	// TODO: frontend
 }
