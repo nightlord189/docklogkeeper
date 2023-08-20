@@ -7,14 +7,19 @@ import (
 )
 
 type Config struct {
-	LogDirectory string     `yaml:"log_directory" env:"LOG_DIRECTORY"`
-	LogLevel     string     `yaml:"log_level" env:"LOG_LEVEL"` // trace, debug, info, warn, error, fatal, panic, disabled
-	HTTP         HTTPConfig `yaml:"http"`
+	LogLevel string     `yaml:"log_level" env:"LOG_LEVEL"` // trace, debug, info, warn, error, fatal, panic, disabled
+	HTTP     HTTPConfig `yaml:"http"`
+	Log      LogConfig  `yaml:"log"`
 }
 
 type HTTPConfig struct {
 	Port    int    `yaml:"port" env:"HTTP_PORT"`
 	GinMode string `yaml:"gin_mode" env:"GIN_MODE"`
+}
+
+type LogConfig struct {
+	Dir       string `yaml:"dir" env:"LOG_DIR"`
+	Retention int64  `yaml:"retention" env:"LOG_RETENTION"`
 }
 
 func LoadConfig(configFilePath string) (Config, error) {

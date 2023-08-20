@@ -36,9 +36,9 @@ func (h *Handler) Run() error {
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{
 			"Origin", "Access-Control-Allow-Origin", "Content-Type", "Content-Length",
-			"Accept-Encoding", "Authorization", "X-CSRF-Token", "X-Request-ID", "X-Forwarded-For", "Origin", "Referer",
+			"Accept-Encoding", "Authorization", "X-CSRF-Token", "X-Request-FolderName", "X-Forwarded-For", "Origin", "Referer",
 		},
-		ExposeHeaders:    []string{"Content-Length", "Content-Range", "X-Request-ID", "X-Forwarded-For", "Origin", "Referer"},
+		ExposeHeaders:    []string{"Content-Length", "Content-Range", "X-Request-FolderName", "X-Forwarded-For", "Origin", "Referer"},
 		AllowCredentials: true,
 		AllowAllOrigins:  true,
 		MaxAge:           12 * time.Hour,
