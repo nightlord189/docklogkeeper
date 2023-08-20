@@ -1,0 +1,7 @@
+log_directory: /var/lib/docker/containers
+
+log_level: debug
+
+http:
+  port: 8080
+  gin_mode: debug
