@@ -28,10 +28,7 @@ func main() {
 
 	zerolog.Ctx(ctx).Debug().Msg("start #2")
 
-	logAdapter, err := log.New(cfg.Log)
-	if err != nil {
-		stdLog.Fatalf("error on init log adapter: %v", err)
-	}
+	logAdapter := log.New(cfg.Log)
 
 	defer logAdapter.Close()
 

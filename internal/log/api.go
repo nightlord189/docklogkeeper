@@ -22,8 +22,9 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 	mergedName := getMergedContainerName(containerName)
 	fileWriter, exists := a.currentFiles[mergedName]
 	if !exists {
+		ensureDir(path.Join(a.Config.Dir, mergedName))
 		fileName := fmt.Sprintf("%s.txt", mergedName)
-		fullFileName := path.Join(a.Config.Dir, fileName)
+		fullFileName := path.Join(a.Config.Dir, mergedName, fileName)
 		newFile, err := os.OpenFile(fullFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Ctx(ctx).Err(err).Str("file_name", fullFileName).Msg("open new file error")

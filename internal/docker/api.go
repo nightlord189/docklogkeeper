@@ -3,16 +3,71 @@ package docker
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"strings"
 	"time"
 )
 
+func (a *Adapter) Run(ctx context.Context) {
+	regularTicker := time.NewTicker(10 * time.Second)
+
+	go a.listenEvents(ctx)
+
+	a.update(ctx)
+outerLoop:
+	for {
+		select {
+		case <-regularTicker.C:
+			a.update(ctx)
+		case <-ctx.Done():
+			break outerLoop
+		}
+	}
+	zerolog.Ctx(ctx).Info().Msg("stopping docker adapter run")
+}
+
+func (a *Adapter) listenEvents(ctx context.Context) {
+	ctx2, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	eventsChan, errChan := a.cli.Events(ctx2, types.EventsOptions{
+		Since:   time.Now().Format(time.RFC3339),
+		Until:   "",
+		Filters: filters.Args{},
+	})
+
+	log.Ctx(ctx).Debug().Msg("listening events")
+outerLoop:
+	for {
+		select {
+		case event, ok := <-eventsChan:
+			if !ok {
+				return
+			}
+			if event.Type != "container" {
+				continue
+			}
+			log.Ctx(ctx).Info().Interface("event", event).Msg("new docker event")
+			a.update(ctx)
+		case err, ok := <-errChan:
+			if !ok {
+				return
+			}
+			log.Ctx(ctx).Err(err).Msg("error from docker events channel")
+			break outerLoop
+		}
+	}
+
+	log.Ctx(ctx).Debug().Msg("restart listen events")
+	a.listenEvents(ctx)
+}
+
 func (a *Adapter) update(ctx context.Context) {
-	fmt.Println("update")
+	a.updateMutex.Lock()
+	defer a.updateMutex.Unlock()
 
 	containers, err := a.cli.ContainerList(ctx, types.ContainerListOptions{
 		All: true,
