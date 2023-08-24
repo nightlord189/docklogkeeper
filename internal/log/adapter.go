@@ -12,15 +12,20 @@ import (
 type Adapter struct {
 	Config         config.LogConfig
 	names          map[string]string     //srv-captain--jsonbeautifier.1.qa9gcu6usinw06lqcfu286wsc -> srv-captain--jsonbeautifier
-	currentFiles   map[string]*os.File   //srv-captain--jsonbeautifier -> srv-captain--jsonbeautifier-log-1.txt
+	currentFiles   map[string]*FileData  //srv-captain--jsonbeautifier -> srv-captain--jsonbeautifier-log-1.txt
 	lastTimestamps map[string]*time.Time //srv-captain--jsonbeautifier->"timestamp..."
+}
+
+type FileData struct {
+	Writer *os.File
+	Size   int64
 }
 
 func New(cfg config.LogConfig) *Adapter {
 	adapter := &Adapter{
 		Config:         cfg,
 		names:          make(map[string]string, 10),
-		currentFiles:   make(map[string]*os.File, 10),
+		currentFiles:   make(map[string]*FileData, 10),
 		lastTimestamps: make(map[string]*time.Time, 10),
 	}
 	ensureDir(adapter.Config.Dir)
@@ -42,6 +47,6 @@ func ensureDir(dir string) {
 
 func (a *Adapter) Close() {
 	for _, f := range a.currentFiles {
-		f.Close()
+		f.Writer.Close()
 	}
 }

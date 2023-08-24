@@ -38,3 +38,5 @@ node_modules/
 
 # for caprover deploy
 deploy.tar
+
+docklogkeeper/
