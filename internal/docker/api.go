@@ -96,17 +96,14 @@ func (a *Adapter) update(ctx context.Context) {
 
 func (a *Adapter) readContainerLogs(ctx context.Context, containerID, containerName string) {
 	//fmt.Println("reading container logs", containerName)
+	since := a.LogAdapter.GetSinceTimestamp(containerName)
 
-	since := a.lastTimestamps[containerName]
-	if since == "" {
-		since = time.Now().Add(-5 * time.Minute).Format(time.RFC3339)
-	}
 	reader, err := a.cli.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: false,
 		Since:      since,
 		Until:      "",
-		Timestamps: false,
+		Timestamps: true,
 		Follow:     false,
 		Tail:       "",
 		Details:    false,
@@ -123,5 +120,4 @@ func (a *Adapter) readContainerLogs(ctx context.Context, containerID, containerN
 		return
 	}
 	a.LogAdapter.WriteMessage(ctx, containerName, buf)
-	a.lastTimestamps[containerName] = time.Now().Format(time.RFC3339)
 }

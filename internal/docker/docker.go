@@ -10,11 +10,10 @@ import (
 )
 
 type Adapter struct {
-	Config         config.Config
-	LogAdapter     *log.Adapter
-	updateMutex    *sync.Mutex
-	cli            *client.Client
-	lastTimestamps map[string]string
+	Config      config.Config
+	LogAdapter  *log.Adapter
+	updateMutex *sync.Mutex
+	cli         *client.Client
 }
 
 func New(ctx context.Context, cfg config.Config, lg *log.Adapter) (*Adapter, error) {
@@ -23,11 +22,10 @@ func New(ctx context.Context, cfg config.Config, lg *log.Adapter) (*Adapter, err
 		return nil, err
 	}
 	return &Adapter{
-		Config:         cfg,
-		LogAdapter:     lg,
-		updateMutex:    &sync.Mutex{},
-		cli:            cli,
-		lastTimestamps: make(map[string]string, 10),
+		Config:      cfg,
+		LogAdapter:  lg,
+		updateMutex: &sync.Mutex{},
+		cli:         cli,
 	}, nil
 }
 

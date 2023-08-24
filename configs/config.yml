@@ -6,5 +6,5 @@ http:
 
 log:
   dir: ./docklogkeeper
-  retention: 604800 #1 week
-  chunk_size: 1048576 #1 MB
+  retention: 604800 #1 week in seconds
+  chunk_size: 1048576 #1 MB in bytes
