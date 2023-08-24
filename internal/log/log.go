@@ -10,23 +10,10 @@ import (
 	"io/fs"
 	"os"
 	"path"
-	"sort"
 	"time"
 )
 
 const defaultFileName = "1.txt"
-
-func (a *Adapter) GetSinceTimestamp(containerName string) string {
-	shortName := a.getMergedContainerName(containerName)
-	since := a.lastTimestamps[shortName]
-	if since == nil {
-		// TODO: try get from files
-		newSince := time.Now().Add(-5 * time.Minute)
-		since = &newSince
-		a.lastTimestamps[shortName] = since
-	}
-	return since.Format(time.RFC3339)
-}
 
 func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *bytes.Buffer) {
 	if buf.Len() == 0 {
@@ -36,6 +23,8 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 	shortName := a.getMergedContainerName(containerName)
 
 	fmt.Println("writeMessage", shortName, buf.Len())
+
+	ctx = log.Ctx(ctx).With().Str("short_name", shortName).Logger().WithContext(ctx)
 
 	fileData := a.getFileData(ctx, shortName)
 	if fileData == nil {
@@ -102,7 +91,7 @@ func (a *Adapter) checkCurrentChunkSize(ctx context.Context, shortName string) {
 		// increase number
 		nextChunkName := getNextFileName(ctx, fileData.Writer.Name())
 		// open new file
-		newWriter := a.openFile(ctx, shortName, nextChunkName)
+		newWriter := openFile(ctx, path.Join(a.Config.Dir, shortName, nextChunkName), false)
 		log.Ctx(ctx).Info().Int64("current_size", fileData.Size).Str("new_chunk", nextChunkName).Msg("new chunk")
 		if newWriter == nil {
 			return
@@ -130,22 +119,29 @@ func (a *Adapter) getLastChunkFromDir(ctx context.Context, shortName string) *os
 		log.Ctx(ctx).Info().Str("filename", fileName).Msgf("opening first chunk")
 	}
 
-	fileWriter := a.openFile(ctx, shortName, fileName)
+	fileWriter := openFile(ctx, path.Join(a.Config.Dir, shortName, fileName), false)
 
-	return fileWriter
-}
-
-func (a *Adapter) openFile(ctx context.Context, shortName, fileName string) *os.File {
-	fullFileName := path.Join(a.Config.Dir, shortName, fileName)
-	fileWriter, err := os.OpenFile(fullFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Ctx(ctx).Err(err).Str("file_name", fullFileName).Msg("open new file error")
-		return nil
-	}
 	return fileWriter
 }
 
 func (a *Adapter) getLastFileNameFromDir(ctx context.Context, shortName string) fs.FileInfo {
+	fSortedFiles := a.getSortedFilesByDir(shortName)
+
+	if len(fSortedFiles) == 0 {
+		return nil
+	}
+
+	lastFile := fSortedFiles[len(fSortedFiles)-1]
+
+	fileInfo, err := lastFile.Info()
+	if err != nil {
+		log.Ctx(ctx).Err(err).Str("file_name", lastFile.Name()).Msg("get file info error")
+	}
+
+	return fileInfo
+}
+
+func (a *Adapter) getSortedFilesByDir(shortName string) []os.DirEntry {
 	dir := path.Join(a.Config.Dir, shortName)
 	if _, err := os.Stat(dir); err != nil {
 		return nil
@@ -161,29 +157,7 @@ func (a *Adapter) getLastFileNameFromDir(ctx context.Context, shortName string) 
 
 	fSortedFiles := getFilteredAndSortedFiles(files)
 
-	lastFile := fSortedFiles[len(fSortedFiles)-1]
-
-	fileInfo, err := lastFile.Info()
-	if err != nil {
-		log.Ctx(ctx).Err(err).Str("file_name", lastFile.Name()).Msg("get file info error")
-	}
-
-	return fileInfo
-}
-
-func getFilteredAndSortedFiles(files []os.DirEntry) []os.DirEntry {
-	filtered := make([]os.DirEntry, 0, len(files))
-	for _, file := range files {
-		if !file.IsDir() {
-			filtered = append(filtered, file)
-		}
-	}
-
-	sort.Slice(filtered, func(i, j int) bool {
-		return filtered[i].Name() < filtered[j].Name()
-	})
-
-	return filtered
+	return fSortedFiles
 }
 
 func (a *Adapter) getMergedContainerName(containerName string) string {

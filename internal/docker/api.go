@@ -96,7 +96,7 @@ func (a *Adapter) update(ctx context.Context) {
 
 func (a *Adapter) readContainerLogs(ctx context.Context, containerID, containerName string) {
 	//fmt.Println("reading container logs", containerName)
-	since := a.LogAdapter.GetSinceTimestamp(containerName)
+	since := a.LogAdapter.GetSinceTimestamp(ctx, containerName)
 
 	reader, err := a.cli.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
 		ShowStdout: true,

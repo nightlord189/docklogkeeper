@@ -6,10 +6,24 @@ import (
 	"github.com/rs/zerolog/log"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
+
+func openFile(ctx context.Context, filePath string, readOnly bool) *os.File {
+	flag := os.O_APPEND | os.O_CREATE | os.O_WRONLY
+	if readOnly {
+		flag = os.O_RDONLY
+	}
+	fileWriter, err := os.OpenFile(filePath, flag, 0644)
+	if err != nil {
+		log.Ctx(ctx).Err(err).Str("file_name", filePath).Msg("open new file error")
+		return nil
+	}
+	return fileWriter
+}
 
 func getSize(ctx context.Context, fileWriter *os.File) int64 {
 	fileInfo, err := fileWriter.Stat()
@@ -37,6 +51,21 @@ func getNextFileName(ctx context.Context, lastFileName string) string {
 	number++
 
 	return fmt.Sprintf("%d.txt", number)
+}
+
+func getFilteredAndSortedFiles(files []os.DirEntry) []os.DirEntry {
+	filtered := make([]os.DirEntry, 0, len(files))
+	for _, file := range files {
+		if !file.IsDir() {
+			filtered = append(filtered, file)
+		}
+	}
+
+	sort.Slice(filtered, func(i, j int) bool {
+		return filtered[i].Name() < filtered[j].Name()
+	})
+
+	return filtered
 }
 
 func getLastTimestampFromLog(log string) *time.Time {
