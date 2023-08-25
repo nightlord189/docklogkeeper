@@ -44,7 +44,7 @@ func main() {
 
 	handlerInst := handler.New(cfg.HTTP, dock)
 
-	go func() {
+	/*go func() {
 		time.Sleep(5 * time.Second)
 		fmt.Println("delayed test func")
 
@@ -52,6 +52,14 @@ func main() {
 
 		lines, err := logAdapter.SearchLines(ctx, "remindmenow", req)
 		fmt.Printf("search %s: found %d lines, err %v\n", req.Contains, len(lines), err)
+	}()*/
+
+	go func() {
+		ticker := time.NewTicker(10 * time.Minute)
+		logAdapter.ClearOldFiles(ctx)
+		for range ticker.C {
+			logAdapter.ClearOldFiles(ctx)
+		}
 	}()
 
 	if err := handlerInst.Run(); err != nil {
