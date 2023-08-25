@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DockLogKeeper</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .left-menu {
+            padding-top: 10px;
+            padding-left: 20px;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .left-menu a {
+            display: block;
+            margin: 10px 0;
+            text-decoration: none;
+        }
+
+        .log-window {
+            height: calc(100vh - 110px);
+            border: 1px solid #ddd;
+            overflow-y: scroll;
+            padding: 10px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid h-100">
+    <div class="row h-100">
+
+        <!-- Left vertical menu -->
+        <div class="col-2 left-menu">
+            <h3><a href="#" class="text-primary">DockLogKeeper</a></h3>
+            <a href="#" class="text-secondary">Logout</a>
+            <h5 class="mt-4">Containers:</h5>
+            <a href="#" class="text-dark">Container 1</a>
+            <a href="#" class="text-dark">Container 2</a>
+            <a href="#" class="text-dark">Container 3</a>
+            <!-- ... add as many container links as you need -->
+        </div>
+
+        <!-- Right part -->
+        <div class="col-10">
+            <!-- Upper block with search bar -->
+            <div class="input-group mb-3 mt-3">
+                <input type="text" class="form-control" placeholder="Search logs..." aria-label="Search logs">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button">Find</button>
+                </div>
+            </div>
+
+            <!-- Scrollable window for logs -->
+            <div class="log-window">
+                <!-- Sample log entries, can be replaced with dynamic content -->
+                Log entry 1<br> Log entry 2<br> Log entry 3<br>
+                <!-- ... -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS, Popper.js, and jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>
