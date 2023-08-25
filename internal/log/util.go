@@ -19,7 +19,7 @@ func openFile(ctx context.Context, filePath string, readOnly bool) *os.File {
 	}
 	fileWriter, err := os.OpenFile(filePath, flag, 0644)
 	if err != nil {
-		log.Ctx(ctx).Err(err).Str("file_name", filePath).Msg("open new file error")
+		log.Ctx(ctx).Err(err).Str("file_name", filePath).Msg("open file error")
 		return nil
 	}
 	return fileWriter

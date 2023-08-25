@@ -10,6 +10,7 @@ import (
 	pkgLog "github.com/nightlord189/docklogkeeper/pkg/log"
 	"github.com/rs/zerolog"
 	stdLog "log"
+	"time"
 )
 
 func main() {
@@ -43,6 +44,16 @@ func main() {
 
 	handlerInst := handler.New(cfg.HTTP, dock)
 
+	go func() {
+		time.Sleep(5 * time.Second)
+		fmt.Println("delayed test func")
+
+		req := log.SearchRequest{Contains: "gin"}
+
+		lines, err := logAdapter.SearchLines(ctx, "remindmenow", req)
+		fmt.Printf("search %s: found %d lines, err %v\n", req.Contains, len(lines), err)
+	}()
+
 	if err := handlerInst.Run(); err != nil {
 		stdLog.Fatalf("run router error: %v", err)
 	}
@@ -51,7 +62,6 @@ func main() {
 
 	// TODO: auth
 	// TODO: setting for beautifying container name
-	// TODO: search
 	// TODO: get logs (pagination)
 	// TODO: frontend
 }
