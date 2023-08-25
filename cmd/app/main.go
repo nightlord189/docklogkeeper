@@ -61,7 +61,5 @@ func main() {
 	// TODO: retention by date
 
 	// TODO: auth
-	// TODO: setting for beautifying container name
-	// TODO: get logs (pagination)
 	// TODO: frontend
 }
