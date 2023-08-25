@@ -1,0 +1,50 @@
+definitions:
+  handler.AuthRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  handler.GenericResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/auth:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Input model
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - auth
+swagger: "2.0"

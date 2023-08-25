@@ -1,3 +1,6 @@
+swag:
+	swag init --dir ./cmd/app --parseDependency --parseInternal
+
 deploy:
 	rm deploy.tar || true
 	tar -cvf ./deploy.tar  ./*

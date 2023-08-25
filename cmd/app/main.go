@@ -42,7 +42,7 @@ func main() {
 
 	go dock.Run(ctx)
 
-	handlerInst := handler.New(cfg.HTTP, dock)
+	handlerInst := handler.New(cfg, dock)
 
 	/*go func() {
 		time.Sleep(5 * time.Second)
@@ -66,8 +66,5 @@ func main() {
 		stdLog.Fatalf("run router error: %v", err)
 	}
 
-	// TODO: retention by date
-
 	// TODO: auth
-	// TODO: frontend
 }

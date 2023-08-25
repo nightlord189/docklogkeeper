@@ -4,7 +4,12 @@ http:
   port: 8080
   gin_mode: debug
 
+auth:
+  secret: nx5iZBiUqbYEUmzfV5Se
+  password: keeper43
+
+
 log:
-  dir: ./docklogkeeper
+  dir: ./logs
   retention: 604800 #1 week in seconds
   chunk_size: 1048576 #1 MB in bytes

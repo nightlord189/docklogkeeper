@@ -2,31 +2,38 @@ package handler
 
 import (
 	"fmt"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/nightlord189/docklogkeeper/internal/config"
 	docker2 "github.com/nightlord189/docklogkeeper/internal/docker"
 	"io"
 	"time"
 
+	_ "github.com/nightlord189/docklogkeeper/docs"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Handler struct {
-	Config config.HTTPConfig
+	Config config.Config
 	Docker *docker2.Adapter
 }
 
-func New(cfg config.HTTPConfig, dock *docker2.Adapter) *Handler {
+func New(cfg config.Config, dock *docker2.Adapter) *Handler {
 	return &Handler{Config: cfg, Docker: dock}
 }
 
 func (h *Handler) Run() error {
-	gin.SetMode(h.Config.GinMode)
+	gin.SetMode(h.Config.HTTP.GinMode)
 	router := gin.New()
 	router.Use(gin.Recovery())
 	ginLoggerConfig := gin.LoggerConfig{}
 
-	if h.Config.GinMode == "release" {
+	if h.Config.HTTP.GinMode == "release" {
 		ginLoggerConfig.Output = io.Discard
 	}
 
@@ -46,8 +53,18 @@ func (h *Handler) Run() error {
 
 	router.Use(corsMiddleware)
 
+	store := cookie.NewStore([]byte(h.Config.Auth.Secret))
+	router.Use(sessions.Sessions("defaultsession", store))
+
+	router.GET("/swagger/*any", func(context *gin.Context) {
+		ginSwagger.WrapHandler(swaggerFiles.Handler)(context)
+	})
+
 	router.OPTIONS("/", func(c *gin.Context) {
 		c.AbortWithStatus(204)
 	})
-	return router.Run(fmt.Sprintf(":%d", h.Config.Port))
+
+	router.POST("/api/auth", h.Auth)
+	
+	return router.Run(fmt.Sprintf(":%d", h.Config.HTTP.Port))
 }
