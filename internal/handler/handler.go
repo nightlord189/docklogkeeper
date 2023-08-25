@@ -5,7 +5,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/nightlord189/docklogkeeper/internal/config"
-	docker2 "github.com/nightlord189/docklogkeeper/internal/docker"
+	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	"io"
 	"net/http"
 	"time"
@@ -20,12 +20,12 @@ import (
 )
 
 type Handler struct {
-	Config config.Config
-	Docker *docker2.Adapter
+	Config  config.Config
+	Usecase *usecase.Usecase
 }
 
-func New(cfg config.Config, dock *docker2.Adapter) *Handler {
-	return &Handler{Config: cfg, Docker: dock}
+func New(cfg config.Config, ucInst *usecase.Usecase) *Handler {
+	return &Handler{Config: cfg, Usecase: ucInst}
 }
 
 func (h *Handler) Run() error {
@@ -69,11 +69,16 @@ func (h *Handler) Run() error {
 
 	htmlPages := []string{
 		"static/web/auth.html",
+		"static/web/logs.html",
 	}
 	router.LoadHTMLFiles(htmlPages...)
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "auth.html", gin.H{})
+	})
+
+	router.GET("/logs", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "logs.html", gin.H{})
 	})
 
 	return router.Run(fmt.Sprintf(":%d", h.Config.HTTP.Port))

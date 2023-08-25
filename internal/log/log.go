@@ -20,7 +20,7 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 		return
 	}
 
-	shortName := a.getMergedContainerName(containerName)
+	shortName := a.GetShortContainerName(containerName)
 
 	fmt.Println("writeMessage", shortName, buf.Len())
 
@@ -160,10 +160,10 @@ func (a *Adapter) getSortedFilesByDir(shortName string) []os.DirEntry {
 	return fSortedFiles
 }
 
-func (a *Adapter) getMergedContainerName(containerName string) string {
+func (a *Adapter) GetShortContainerName(containerName string) string {
 	result := a.names[containerName]
 	if result == "" {
-		result = calcMergedContainerName(containerName)
+		result = calcShortContainerName(containerName)
 		a.names[containerName] = result
 	}
 	return result

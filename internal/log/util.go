@@ -80,7 +80,7 @@ func getLastTimestampFromLog(log string) *time.Time {
 	return &timestamp
 }
 
-func calcMergedContainerName(containerName string) string {
+func calcShortContainerName(containerName string) string {
 	if strings.Contains(containerName, ".") && !strings.HasPrefix(containerName, ".") {
 		splitted := strings.Split(containerName, ".")
 		return splitted[0]

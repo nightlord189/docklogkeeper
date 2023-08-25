@@ -10,7 +10,7 @@ import (
 )
 
 func (a *Adapter) GetSinceTimestamp(ctx context.Context, containerName string) string {
-	shortName := a.getMergedContainerName(containerName)
+	shortName := a.GetShortContainerName(containerName)
 	since := a.lastTimestamps[shortName]
 	if since == nil {
 		ctx = log.Ctx(ctx).With().Str("short_name", shortName).Logger().WithContext(ctx)

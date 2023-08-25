@@ -7,6 +7,7 @@ import (
 	docker2 "github.com/nightlord189/docklogkeeper/internal/docker"
 	"github.com/nightlord189/docklogkeeper/internal/handler"
 	"github.com/nightlord189/docklogkeeper/internal/log"
+	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	pkgLog "github.com/nightlord189/docklogkeeper/pkg/log"
 	"github.com/rs/zerolog"
 	stdLog "log"
@@ -42,7 +43,9 @@ func main() {
 
 	go dock.Run(ctx)
 
-	handlerInst := handler.New(cfg, dock)
+	usecaseInst := usecase.New(dock, logAdapter)
+
+	handlerInst := handler.New(cfg, usecaseInst)
 
 	/*go func() {
 		time.Sleep(5 * time.Second)
@@ -66,5 +69,6 @@ func main() {
 		stdLog.Fatalf("run router error: %v", err)
 	}
 
-	// TODO: auth
+	// TODO: main page
+	// TODO: list of containers (alive or not)
 }
