@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	sessionName = "default"
 	userKey     = "user_id"
 	defaultUser = "admin"
 )
@@ -33,7 +34,7 @@ func (h *Handler) Auth(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, GenericError("bad credentials"))
 		return
 	}
-
+	
 	session := sessions.Default(c)
 	session.Set(userKey, defaultUser)
 

@@ -7,6 +7,7 @@ import (
 	"github.com/nightlord189/docklogkeeper/internal/config"
 	docker2 "github.com/nightlord189/docklogkeeper/internal/docker"
 	"io"
+	"net/http"
 	"time"
 
 	_ "github.com/nightlord189/docklogkeeper/docs"
@@ -54,7 +55,7 @@ func (h *Handler) Run() error {
 	router.Use(corsMiddleware)
 
 	store := cookie.NewStore([]byte(h.Config.Auth.Secret))
-	router.Use(sessions.Sessions("defaultsession", store))
+	router.Use(sessions.Sessions(sessionName, store))
 
 	router.GET("/swagger/*any", func(context *gin.Context) {
 		ginSwagger.WrapHandler(swaggerFiles.Handler)(context)
@@ -65,6 +66,15 @@ func (h *Handler) Run() error {
 	})
 
 	router.POST("/api/auth", h.Auth)
-	
+
+	htmlPages := []string{
+		"static/web/auth.html",
+	}
+	router.LoadHTMLFiles(htmlPages...)
+
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "auth.html", gin.H{})
+	})
+
 	return router.Run(fmt.Sprintf(":%d", h.Config.HTTP.Port))
 }

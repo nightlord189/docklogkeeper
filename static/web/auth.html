@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding-top: 60px; /* Increased padding */
+            font-size: 1.2em;  /* Increased font-size */
+        }
+
+        .auth-window {
+            margin: 0 auto;
+            background-color: white;
+            padding: 24px;     /* Increased padding */
+            border-radius: 6px; /* Slightly increased border radius */
+            box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.1);
+            width: 384px;     /* Increased width */
+            text-align: center;
+        }
+
+        .auth-window input {
+            width: calc(100% - 28px); /* Adjusted width */
+            padding: 12px;            /* Increased padding */
+            margin: 12px 0;           /* Increased margin */
+            border: 1px solid #ddd;
+            border-radius: 5px;       /* Slightly increased border radius */
+        }
+
+        .auth-window button {
+            margin-top: 12px;         /* Increased margin */
+            padding: 12px 24px;       /* Increased padding */
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;       /* Slightly increased border radius */
+            color: white;
+            cursor: pointer;
+            font-size: 1.0em;
+        }
+
+        .error-label {
+            color: red;
+            display: block;
+            font-size: 0.9em; /* Slightly increased font-size */
+            margin-top: 6px;   /* Adjusted margin */
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-window">
+    <form id="authForm">
+        <input id="usernameInput" type="text" name="username" placeholder="Username" required>
+        <input id="passwordInput" type="password" name="password" placeholder="Password" required>
+        <span id="errorText" class="error-label" style="display: none">Bad credentials</span>
+        <button id="submitButton" type="submit">Login</button>
+    </form>
+</div>
+</body>
+
+<script>
+    window.onload = function() {
+        console.log(document.cookie);
+        if (document.cookie.split(';').some((item) => item.trim().startsWith('default='))) {
+            console.log('user is already authorized, redirecting');
+            window.location.href = "/logs";
+        }
+    };
+
+    const authForm = document.getElementById('authForm');
+    const submitButton = document.getElementById('submitButton');
+    const usernameInput = document.getElementById('usernameInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const errorText = document.getElementById('errorText');
+
+    authForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        submitButton.disabled = true;
+
+        // Reset errorText first
+        errorText.textContent = '';
+        errorText.style.display = 'none';
+
+        const username = usernameInput.value;
+        const password = passwordInput.value;
+
+        const body = {
+            username: username,
+            password: password,
+        };
+
+        try {
+            const resp = await fetch('/api/auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+            const respJson = await resp.json();
+
+            if (resp.status <= 299) {
+                console.log('success auth');
+                //window.location.href = "/reminders";
+            } else {
+                const errorMessage = respJson.message || 'Something went wrong';
+                showError(errorMessage);
+            }
+        } catch (err) {
+            console.log(err);
+            showError('Something went wrong');
+        }
+
+        submitButton.disabled = false;
+    });
+
+    function showError(message) {
+        errorText.textContent = message;
+        errorText.style.display = 'block';
+    }
+</script>
+</body>
+
+</html>
