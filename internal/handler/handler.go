@@ -55,6 +55,15 @@ func (h *Handler) Run() error {
 	router.Use(corsMiddleware)
 
 	store := cookie.NewStore([]byte(h.Config.Auth.Secret))
+	store.Options(sessions.Options{
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   7 * 86400,
+		Secure:   false,
+		HttpOnly: false,
+		SameSite: 0,
+	})
+
 	router.Use(sessions.Sessions(sessionName, store))
 
 	router.GET("/swagger/*any", func(context *gin.Context) {
@@ -72,6 +81,8 @@ func (h *Handler) Run() error {
 		"static/web/logs.html",
 	}
 	router.LoadHTMLFiles(htmlPages...)
+
+	router.Static("/js", "static/web/js")
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "auth.html", gin.H{})

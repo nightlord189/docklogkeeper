@@ -46,9 +46,9 @@
 
         <!-- Left vertical menu -->
         <div class="col-2 left-menu">
-            <h3><a href="#" class="text-primary">DockLogKeeper</a></h3>
-            <a href="#" class="text-secondary">Logout</a>
-            <h5 class="mt-4">Containers:</h5>
+            <h3><a href="/" class="text-primary">DockLogKeeper</a></h3>
+            <a id="logoutLink" href="#" class="text-secondary">Logout</a>
+            <h5 id="containersRoot" class="mt-4">Containers:</h5>
             <a href="#" class="text-dark">Container 1</a>
             <a href="#" class="text-dark">Container 2</a>
             <a href="#" class="text-dark">Container 3</a>
@@ -61,12 +61,12 @@
             <div class="input-group mb-3 mt-3">
                 <input type="text" class="form-control" placeholder="Search logs..." aria-label="Search logs">
                 <div class="input-group-append">
-                    <button class="btn btn-primary" type="button">Find</button>
+                    <button id="findButton" class="btn btn-primary" type="button">Find</button>
                 </div>
             </div>
 
             <!-- Scrollable window for logs -->
-            <div class="log-window">
+            <div id="logsRoot" class="log-window">
                 <!-- Sample log entries, can be replaced with dynamic content -->
                 Log entry 1<br> Log entry 2<br> Log entry 3<br>
                 <!-- ... -->
@@ -79,6 +79,26 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="/js/main.js"></script>
+<script>
+    window.onload = function() {
+        if (!isAuthorized()) {
+            console.log('user is not authorized');
+            window.location.href = '/';
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const logoutLink = document.getElementById('logoutLink');
+
+        logoutLink.addEventListener('click', function () {
+            console.log('logout');
+            document.cookie = 'default='
+            window.location.href = "/";
+        });
+    });
+</script>
 
 </body>
 
