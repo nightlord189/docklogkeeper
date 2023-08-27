@@ -45,7 +45,7 @@ func main() {
 
 	usecaseInst := usecase.New(dock, logAdapter)
 
-	handlerInst := handler.New(cfg, usecaseInst)
+	handlerInst := handler.New(cfg, usecaseInst, logAdapter)
 
 	/*go func() {
 		time.Sleep(5 * time.Second)
@@ -68,7 +68,6 @@ func main() {
 	if err := handlerInst.Run(); err != nil {
 		stdLog.Fatalf("run router error: %v", err)
 	}
-	
+
 	// TODO: get and render logs
-	// TODO: search logs
 }

@@ -26,6 +26,13 @@ definitions:
           $ref: '#/definitions/entity.ContainerInfo'
         type: array
     type: object
+  handler.SearchLogsResponse:
+    properties:
+      records:
+        items:
+          type: string
+        type: array
+    type: object
 info:
   contact: {}
 paths:
@@ -82,4 +89,39 @@ paths:
             $ref: '#/definitions/handler.GenericResponse'
       tags:
       - container
+  /api/container/{shortname}/log/search:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: container's short name
+        in: path
+        name: shortname
+        required: true
+        type: string
+      - description: contains substring
+        in: query
+        name: contains
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.SearchLogsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - log
 swagger: "2.0"

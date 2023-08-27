@@ -5,6 +5,14 @@ import (
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 )
 
+type SearchLogsRequest struct {
+	Contains string `form:"contains"`
+}
+
+type SearchLogsResponse struct {
+	Records []string `json:"records"`
+}
+
 type GetContainersResponse struct {
 	Containers []entity.ContainerInfo `json:"containers"`
 }

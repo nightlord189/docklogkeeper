@@ -5,6 +5,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/nightlord189/docklogkeeper/internal/config"
+	"github.com/nightlord189/docklogkeeper/internal/log"
 	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	"io"
 	"net/http"
@@ -20,12 +21,13 @@ import (
 )
 
 type Handler struct {
-	Config  config.Config
-	Usecase *usecase.Usecase
+	Config     config.Config
+	Usecase    *usecase.Usecase
+	LogAdapter *log.Adapter
 }
 
-func New(cfg config.Config, ucInst *usecase.Usecase) *Handler {
-	return &Handler{Config: cfg, Usecase: ucInst}
+func New(cfg config.Config, ucInst *usecase.Usecase, lgAdapter *log.Adapter) *Handler {
+	return &Handler{Config: cfg, Usecase: ucInst, LogAdapter: lgAdapter}
 }
 
 func (h *Handler) Run() error {
@@ -76,6 +78,7 @@ func (h *Handler) Run() error {
 
 	router.POST("/api/auth", h.Auth)
 	router.GET("/api/container", h.CookieAuthMdw, h.GetContainers)
+	router.GET("/api/container/:shortname/log/search", h.CookieAuthMdw, h.SearchLogs)
 
 	htmlPages := []string{
 		"static/web/auth.html",

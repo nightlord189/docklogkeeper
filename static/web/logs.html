@@ -84,12 +84,14 @@
         <!-- Right part -->
         <div class="col-10">
             <!-- Upper block with search bar -->
-            <div class="input-group mb-3 mt-3">
-                <input type="text" class="form-control" placeholder="Search logs..." aria-label="Search logs">
-                <div class="input-group-append">
-                    <button id="findButton" class="btn btn-primary" type="button">Find</button>
+            <form id="searchForm">
+                <div class="input-group mb-3 mt-3">
+                    <input id="searchInput" type="text" class="form-control" placeholder="Search logs..." aria-label="Search logs">
+                    <div class="input-group-append">
+                        <button id="findButton" class="btn btn-primary" type="button">Find</button>
+                    </div>
                 </div>
-            </div>
+            </form>
 
             <!-- Scrollable window for logs -->
             <div id="logsRoot" class="log-window">
@@ -108,6 +110,12 @@
 
 <script src="/js/main.js"></script>
 <script>
+    let currentContainer = '';
+
+    function setCurrentContainer (newVal) {
+        currentContainer = newVal;
+    }
+
     window.onload = function() {
         if (!isAuthorized()) {
             console.log('user is not authorized');
@@ -127,6 +135,7 @@
         containers.forEach(item => {
             const containerLink = document.createElement('a');
             containerLink.href = "#"; // You can modify the href as required
+            containerLink.setAttribute('data-itemId', item.shortName);
             containerLink.className = 'text-dark container';
 
             // Create the status bulb and assign the appropriate class
@@ -138,7 +147,8 @@
             containerLink.appendChild(document.createTextNode(item.shortName));
 
             // Click event to update the selected container
-            containerLink.addEventListener('click', function() {
+            containerLink.addEventListener('click', function(event) {
+                event.preventDefault();
                 // Remove the selected-container class from any other container
                 const selected = document.querySelector('a.container.selected');
                 if (selected) {
@@ -146,8 +156,9 @@
                 }
 
                 // Add the selected-container class to the clicked container
-                containerLink.classList.add('selected' +
-                    '');
+                containerLink.classList.add('selected');
+
+                setCurrentContainer(event.target.getAttribute('data-itemId'));
             });
 
             contRoot.appendChild(containerLink);
@@ -177,6 +188,39 @@
         }
     }
 
+    function renderLogs (logs, fromSearch) {
+        const logsRoot = document.getElementById('logsRoot');
+        logsRoot.innerHTML = '';
+        if (logs.length === 0) {
+            logsRoot.innerHTML = fromSearch ? 'Not found' : "No logs";
+            return
+        }
+
+        logsRoot.innerHTML = logs.join('<br>');
+    }
+
+    async function search (contains) {
+        try {
+            const resp = await fetch(`/api/container/${currentContainer}/log/search?contains=${contains}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            const respJson = await resp.json();
+
+            if (resp.status <= 299) {
+                console.log('success search');
+                renderLogs(respJson.records, true);
+            } else {
+                const errorMessage = respJson.message || 'Something went wrong';
+                console.log(errorMessage);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
         const logoutLink = document.getElementById('logoutLink');
 
@@ -185,6 +229,34 @@
         });
 
         await updateContainers();
+
+        const searchInput = document.getElementById('searchInput');
+        const findButton = document.getElementById('findButton');
+        const searchForm = document.getElementById('searchForm');
+
+        async function searchListener (event) {
+            event.preventDefault();
+            console.log('search');
+
+            if (!currentContainer) {
+                return
+            }
+
+            findButton.disabled = true;
+
+            const searchText = searchInput.value;
+            if (!searchText) {
+                findButton.disabled = false;
+                return
+            }
+
+            await search(searchText);
+
+            findButton.disabled = false;
+        }
+
+        searchForm.addEventListener('submit', searchListener);
+        findButton.addEventListener('click', searchListener);
     });
 </script>
 
