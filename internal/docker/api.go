@@ -10,7 +10,7 @@ import (
 )
 
 func (a *Adapter) Run(ctx context.Context) {
-	regularTicker := time.NewTicker(10 * time.Second)
+	regularTicker := time.NewTicker(time.Duration(a.Config.Log.UpdateFrequency) * time.Second)
 
 	go a.listenEvents(ctx)
 

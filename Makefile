@@ -1,10 +1,18 @@
 buildg:
-	docker build --no-cache -t "generator:latest" ./test/generator
+	docker build --no-cache -t "bibgen:latest" ./test/bibgen
 
 rung:
-	docker stop generator || true
-	docker rm generator || true
-	docker run --name generator generator:latest
+	docker stop bibgen || true
+	docker rm bibgen || true
+	docker run --name bibgen bibgen:latest
+
+buildg2:
+	docker build --no-cache -t "randomgen:latest" ./test/randomgen
+
+rung2:
+	docker stop randomgen || true
+	docker rm randomgen || true
+	docker run --name randomgen -d randomgen:latest
 
 swag:
 	swag init --dir ./cmd/app --parseDependency --parseInternal

@@ -132,7 +132,7 @@
         currentChunkNumber = 0;
         currentOffset = 0;
         renderLogs(null, false, 'Loading...');
-        await getLogs();
+        await getLogs(false);
     }
 
     window.onload = function() {
@@ -246,7 +246,7 @@
         }
     }
 
-    async function getLogs () {
+    async function getLogs (append) {
         try {
             const resp = await fetch(`/api/container/${currentContainer}/log?chunk_number=${currentChunkNumber}&offset=${currentOffset}&limit=${limit}`, {
                 method: 'GET',
@@ -264,7 +264,7 @@
 
                 console.log(`container ${currentContainer} chunk ${currentChunkNumber} offset ${currentOffset}`);
 
-                renderLogs(respJson.records, true, 'There is no logs');
+                renderLogs(respJson.records, append, 'There is no logs');
             } else {
                 const errorMessage = respJson.message || 'Something went wrong';
                 console.log(errorMessage);
@@ -319,14 +319,14 @@
             updLogsBtn.disabled = true;
             currentChunkNumber = 0;
             currentOffset = 0;
-            await getLogs();
-            updLogsBtn.disabled = true;
+            await getLogs(false);
+            updLogsBtn.disabled = false;
         });
 
         nextLogsButton.addEventListener('click', async function () {
             console.log('next logs');
             nextLogsButton.disabled = true;
-            await getLogs();
+            await getLogs(true);
             nextLogsButton.disabled = false;
         })
 
