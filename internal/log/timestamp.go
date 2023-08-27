@@ -20,8 +20,6 @@ func (a *Adapter) GetSinceTimestamp(ctx context.Context, containerName string) s
 			since = &newSince
 		} else {
 			log.Ctx(ctx).Info().Str("short_name", shortName).Time("timestamp", *since).Msg("last timestamp loaded from file")
-			since2 := since.Add(1 * time.Second)
-			since = &since2
 		}
 		a.lastTimestamps[shortName] = since
 	}
@@ -77,7 +75,7 @@ func getTimestampFromFile(ctx context.Context, filePath string) *time.Time {
 		return nil
 	}
 	for i := len(splittedLines) - 1; i >= 0; i-- {
-		timestamp := getLastTimestampFromLog(splittedLines[i])
+		timestamp := getTimestampFromLog(splittedLines[i])
 		if timestamp != nil {
 			log.Ctx(ctx).Info().Str("filename", filePath).
 				Str("line", splittedLines[i]).Time("timestamp", *timestamp).Msgf("found timestamp in line %d", i)

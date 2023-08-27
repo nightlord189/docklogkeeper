@@ -10,7 +10,6 @@ import (
 	"io/fs"
 	"os"
 	"path"
-	"time"
 )
 
 const defaultFileName = "1.txt"
@@ -22,7 +21,7 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 
 	shortName := a.GetShortContainerName(containerName)
 
-	fmt.Println("writeMessage", shortName, buf.Len())
+	//fmt.Println("writeMessage", shortName, buf.Len())
 
 	ctx = log.Ctx(ctx).With().Str("short_name", shortName).Logger().WithContext(ctx)
 
@@ -33,6 +32,10 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 
 	lastLine := ""
 	linesCount := 0
+
+	lastTimestamp := a.lastTimestamps[shortName]
+	foundNewLogs := false
+
 	for {
 		readBytes, err := buf.ReadBytes('\n')
 		if err != nil {
@@ -43,22 +46,34 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 		}
 		if len(readBytes) > 12 {
 			lastLine = string(readBytes[8:])
+
+			ttFromLog := getTimestampFromLog(lastLine)
+			if !foundNewLogs && timeGreaterOrEqualNil(lastTimestamp, ttFromLog) { // check also for equal
+				//log.Ctx(ctx).Debug().Msgf("skipping line because timestamp, last_tt: %v, current_tt: %v", lastTimestamp, ttFromLog)
+				continue
+			} else {
+				foundNewLogs = true
+			}
 		}
 		n, _ := fileData.Writer.Write(readBytes[8:]) // strip header from docker
 		fileData.Size += int64(n)
 		linesCount++
 	}
+
+	if linesCount == 0 {
+		return
+	}
+
 	fmt.Printf("lines count: %d, lastLine: %s\n", linesCount, lastLine)
 
 	a.currentFiles[shortName] = fileData
 
 	a.checkCurrentChunkSize(ctx, shortName)
 
-	timestampFromLog := getLastTimestampFromLog(lastLine)
+	timestampFromLog := getTimestampFromLog(lastLine)
 	if timestampFromLog != nil {
-		newTimestamp := timestampFromLog.Add(1 * time.Second)
-		a.lastTimestamps[shortName] = &newTimestamp
-		fmt.Println("new timestamp", timestampFromLog, newTimestamp)
+		a.lastTimestamps[shortName] = timestampFromLog
+		fmt.Println(containerName, "last timestamp", timestampFromLog)
 	}
 }
 

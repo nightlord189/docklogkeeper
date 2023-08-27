@@ -12,6 +12,14 @@ import (
 	"time"
 )
 
+func timeGreaterOrEqualNil(t1, t2 *time.Time) bool {
+	return t1 != nil && t2 != nil && t1.UnixMicro() >= t2.UnixMicro()
+}
+
+func timeGreaterOrEqual(t1, t2 time.Time) bool {
+	return t1.UnixMicro() >= t2.UnixMicro()
+}
+
 func openFile(ctx context.Context, filePath string, readOnly bool) *os.File {
 	flag := os.O_APPEND | os.O_CREATE | os.O_WRONLY
 	if readOnly {
@@ -68,7 +76,7 @@ func getFilteredAndSortedFiles(files []os.DirEntry) []os.DirEntry {
 	return filtered
 }
 
-func getLastTimestampFromLog(log string) *time.Time {
+func getTimestampFromLog(log string) *time.Time {
 	splitted := strings.Split(log, " ")
 	if len(splitted) < 2 {
 		return nil

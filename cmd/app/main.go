@@ -71,5 +71,5 @@ func main() {
 
 	// TODO: regular update of containers
 	// TODO: regular update of logs
-	// TODO: update of logs with append to up
+	// TODO: fix rerender in case of click-click to update
 }
