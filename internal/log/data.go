@@ -5,14 +5,14 @@ type SearchRequest struct {
 }
 
 type GetLinesRequest struct {
-	ShortName  string `json:"shortName"`
-	FileNumber int    `json:"fileNumber"`
-	Offset     int    `json:"offset"`
-	Limit      int    `json:"limit"`
+	ShortName   string `json:"shortName"`
+	ChunkNumber int    `json:"chunkNumber"`
+	Offset      int    `json:"offset"`
+	Limit       int    `json:"limit"`
 }
 
 type GetLinesResponse struct {
-	Lines      []string `json:"lines"`
-	FileNumber int      `json:"fileNumber"`
-	Offset     int      `json:"offset"`
+	Records     []string `json:"records"`
+	ChunkNumber int      `json:"chunkNumber"`
+	Offset      int      `json:"offset"`
 }

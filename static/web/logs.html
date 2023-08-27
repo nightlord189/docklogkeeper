@@ -110,11 +110,19 @@
 
 <script src="/js/main.js"></script>
 <script>
-    let currentContainer = '';
+    const limit = 100;
 
-    function setCurrentContainer (newVal) {
+    let currentContainer = '';
+    let currentChunkNumber = 0;
+    let currentOffset = 0;
+
+    async function setCurrentContainer (newVal) {
+        if (newVal === currentContainer) {
+            return
+        }
         currentContainer = newVal;
-        renderLogs(null, 'Loading...');
+        renderLogs(null, false, 'Loading...');
+        await getLogs();
     }
 
     window.onload = function() {
@@ -124,7 +132,7 @@
         }
     };
 
-    async function renderContainers(containers) {
+    function renderContainers(containers) {
         const contRoot = document.getElementById('containersRoot');
 
         // 1. Remove all children of containersRoot
@@ -148,7 +156,7 @@
             containerLink.appendChild(document.createTextNode(item.shortName));
 
             // Click event to update the selected container
-            containerLink.addEventListener('click', function(event) {
+            containerLink.addEventListener('click', async function(event) {
                 event.preventDefault();
                 // Remove the selected-container class from any other container
                 const selected = document.querySelector('a.container.selected');
@@ -159,7 +167,7 @@
                 // Add the selected-container class to the clicked container
                 containerLink.classList.add('selected');
 
-                setCurrentContainer(event.target.getAttribute('data-itemId'));
+                await setCurrentContainer(event.target.getAttribute('data-itemId'));
             });
 
             contRoot.appendChild(containerLink);
@@ -179,7 +187,7 @@
 
             if (resp.status <= 299) {
                 console.log('success get containers');
-                await renderContainers(respJson.containers);
+                renderContainers(respJson.containers);
             } else {
                 const errorMessage = respJson.message || 'Something went wrong';
                 console.log(errorMessage);
@@ -189,15 +197,20 @@
         }
     }
 
-    function renderLogs (logs, messageForEmpty) {
+    function renderLogs (logs, append, messageForEmpty) {
         const logsRoot = document.getElementById('logsRoot');
-        logsRoot.innerHTML = '';
         if (!logs || logs.length === 0) {
             logsRoot.innerHTML = messageForEmpty;
             return
         }
-
-        logsRoot.innerHTML = logs.join('<br>');
+        if (append) {
+            if (logsRoot.innerHTML === 'Loading...' || logsRoot.innerHTML === 'Not found') {
+                logsRoot.innerHTML = '';
+            }
+            logsRoot.innerHTML += logs.join('<br>');
+        } else {
+            logsRoot.innerHTML = logs.join('<br>');
+        }
     }
 
     async function search (contains) {
@@ -212,7 +225,33 @@
 
             if (resp.status <= 299) {
                 console.log('success search');
-                renderLogs(respJson.records, 'Not found');
+                renderLogs(respJson.records, false, 'Not found');
+            } else {
+                const errorMessage = respJson.message || 'Something went wrong';
+                console.log(errorMessage);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    async function getLogs () {
+        try {
+            const resp = await fetch(`/api/container/${currentContainer}/log?chunk_number=${currentChunkNumber}&offset=${currentOffset}&limit=${limit}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            const respJson = await resp.json();
+
+            if (resp.status <= 299) {
+                console.log('success get logs');
+
+                currentChunkNumber = respJson.chunkNumber;
+                currentOffset = respJson.offset;
+
+                renderLogs(respJson.records, true, 'Not found');
             } else {
                 const errorMessage = respJson.message || 'Something went wrong';
                 console.log(errorMessage);
@@ -228,8 +267,6 @@
         logoutLink.addEventListener('click', function () {
             logout();
         });
-
-        await updateContainers();
 
         const searchInput = document.getElementById('searchInput');
         const findButton = document.getElementById('findButton');
@@ -258,6 +295,8 @@
 
         searchForm.addEventListener('submit', searchListener);
         findButton.addEventListener('click', searchListener);
+
+        await updateContainers();
     });
 </script>
 

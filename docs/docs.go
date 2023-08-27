@@ -99,6 +99,72 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/container/{shortname}/log": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "log"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "container's short name",
+                        "name": "shortname",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "number of chunk",
+                        "name": "chunk_number",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset in chunk",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit of result lines",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/log.GetLinesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/container/{shortname}/log/search": {
             "get": {
                 "consumes": [
@@ -200,6 +266,23 @@ const docTemplate = `{
         "handler.SearchLogsResponse": {
             "type": "object",
             "properties": {
+                "records": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "log.GetLinesResponse": {
+            "type": "object",
+            "properties": {
+                "chunkNumber": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
                 "records": {
                     "type": "array",
                     "items": {

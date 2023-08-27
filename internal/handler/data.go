@@ -5,6 +5,19 @@ import (
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 )
 
+type GetLogsRequest struct {
+	ChunkNumber int `form:"chunk_number"`
+	Offset      int `form:"offset"`
+	Limit       int `form:"limit"`
+}
+
+func (r *GetLogsRequest) IsValid() error {
+	if r.Limit == 0 {
+		return fmt.Errorf("limit should be positive")
+	}
+	return nil
+}
+
 type SearchLogsRequest struct {
 	Contains string `form:"contains"`
 }

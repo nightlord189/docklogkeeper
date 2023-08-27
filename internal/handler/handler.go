@@ -78,6 +78,7 @@ func (h *Handler) Run() error {
 
 	router.POST("/api/auth", h.Auth)
 	router.GET("/api/container", h.CookieAuthMdw, h.GetContainers)
+	router.GET("/api/container/:shortname/log", h.CookieAuthMdw, h.GetLogs)
 	router.GET("/api/container/:shortname/log/search", h.CookieAuthMdw, h.SearchLogs)
 
 	htmlPages := []string{

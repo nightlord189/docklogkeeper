@@ -70,4 +70,7 @@ func main() {
 	}
 
 	// TODO: get and render logs
+	// TODO: regular update of containers and logs
+	// TODO: button for update logs
+	// TODO: button for update containers list
 }

@@ -33,6 +33,17 @@ definitions:
           type: string
         type: array
     type: object
+  log.GetLinesResponse:
+    properties:
+      chunkNumber:
+        type: integer
+      offset:
+        type: integer
+      records:
+        items:
+          type: string
+        type: array
+    type: object
 info:
   contact: {}
 paths:
@@ -89,6 +100,49 @@ paths:
             $ref: '#/definitions/handler.GenericResponse'
       tags:
       - container
+  /api/container/{shortname}/log:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: container's short name
+        in: path
+        name: shortname
+        required: true
+        type: string
+      - description: number of chunk
+        in: query
+        name: chunk_number
+        type: integer
+      - description: offset in chunk
+        in: query
+        name: offset
+        type: integer
+      - description: limit of result lines
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/log.GetLinesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - log
   /api/container/{shortname}/log/search:
     get:
       consumes:

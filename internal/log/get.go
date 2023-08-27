@@ -6,6 +6,7 @@ import (
 	"github.com/icza/backscanner"
 	"github.com/rs/zerolog/log"
 	"path"
+	"strconv"
 	"strings"
 )
 
@@ -16,13 +17,21 @@ import (
 func (a *Adapter) GetLogs(ctx context.Context, req GetLinesRequest) (GetLinesResponse, error) {
 	fileEntries := a.getSortedFilesByDir(req.ShortName)
 	if len(fileEntries) == 0 {
-		return GetLinesResponse{}, fmt.Errorf("there is no log files for this container")
+		return GetLinesResponse{}, nil
 	}
 
 	lines := make([]string, 0, req.Limit)
 
-	currentFileNumber := req.FileNumber
+	currentFileNumber := req.ChunkNumber
 	currentOffset := req.Offset
+
+	if currentFileNumber == 0 { // for empty - set to last chunk
+		parsedChunkNumber, err := strconv.Atoi(strings.TrimSuffix(fileEntries[len(fileEntries)-1].Name(), ".txt"))
+		if err != nil {
+			return GetLinesResponse{}, fmt.Errorf("parse last chunk file number error: %w", err)
+		}
+		currentFileNumber = parsedChunkNumber
+	}
 
 	for i := len(fileEntries) - 1; i >= 0; i-- {
 		currentEntry := fileEntries[i]
@@ -71,8 +80,8 @@ func (a *Adapter) GetLogs(ctx context.Context, req GetLinesRequest) (GetLinesRes
 	}
 
 	return GetLinesResponse{
-		Lines:      lines,
-		FileNumber: currentFileNumber,
-		Offset:     currentOffset,
+		Records:     lines,
+		ChunkNumber: currentFileNumber,
+		Offset:      currentOffset,
 	}, nil
 }
