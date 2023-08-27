@@ -30,6 +30,11 @@ func (a *Adapter) ClearOldFiles(ctx context.Context) {
 			log.Ctx(ctx).Err(err).Msgf("read dir error [dir %s]", folder.Name())
 			continue
 		}
+		if len(files) == 0 { // delete empty directories without log files
+			if err := os.Remove(path.Join(a.Config.Dir, folder.Name())); err != nil {
+				log.Ctx(ctx).Err(err).Msgf("delete empty directory error [dir %s]", folder.Name())
+			}
+		}
 		for _, file := range files {
 			info, err := file.Info()
 			if err != nil {

@@ -1,4 +1,11 @@
 definitions:
+  entity.ContainerInfo:
+    properties:
+      isAlive:
+        type: boolean
+      shortName:
+        type: string
+    type: object
   handler.AuthRequest:
     properties:
       password:
@@ -11,6 +18,13 @@ definitions:
       data: {}
       message:
         type: string
+    type: object
+  handler.GetContainersResponse:
+    properties:
+      containers:
+        items:
+          $ref: '#/definitions/entity.ContainerInfo'
+        type: array
     type: object
 info:
   contact: {}
@@ -47,4 +61,25 @@ paths:
             $ref: '#/definitions/handler.GenericResponse'
       tags:
       - auth
+  /api/container:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GetContainersResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - container
 swagger: "2.0"

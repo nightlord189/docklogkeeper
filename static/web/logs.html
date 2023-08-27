@@ -36,6 +36,30 @@
             padding: 10px;
         }
 
+        .bulb {
+            border-radius: 50%;      /* Make it round */
+            width: 10px;             /* Set width */
+            height: 10px;            /* Set height */
+            display: inline-block;   /* Inline with text */
+            margin-right: 5px;       /* Space before the container name */
+        }
+
+        .bulb.alive {
+            background-color: green;
+        }
+
+        .bulb.dead {
+            background-color: red;
+        }
+
+        .container {
+            padding-left: 5px;
+        }
+
+        .container.selected {
+            background-color: #e0e0e0;   /* Light grey background */
+            border-radius: 4px;          /* Rounded corners */
+        }
     </style>
 </head>
 
@@ -48,11 +72,13 @@
         <div class="col-2 left-menu">
             <h3><a href="/" class="text-primary">DockLogKeeper</a></h3>
             <a id="logoutLink" href="#" class="text-secondary">Logout</a>
-            <h5 id="containersRoot" class="mt-4">Containers:</h5>
-            <a href="#" class="text-dark">Container 1</a>
-            <a href="#" class="text-dark">Container 2</a>
-            <a href="#" class="text-dark">Container 3</a>
-            <!-- ... add as many container links as you need -->
+            <h5 class="mt-4">Containers:</h5>
+            <div id="containersRoot" >
+                <a href="#" class="text-dark container selected"><span class="bulb dead"></span>Container 1</a>
+                <a href="#" class="text-dark container"><span class="bulb alive"></span>Container 2</a>
+                <a href="#" class="text-dark container"><span class="bulb alive"></span>Container 3</a>
+                <!-- ... add as many container links as you need -->
+            </div>
         </div>
 
         <!-- Right part -->
@@ -89,14 +115,76 @@
         }
     };
 
+    async function renderContainers(containers) {
+        const contRoot = document.getElementById('containersRoot');
+
+        // 1. Remove all children of containersRoot
+        while (contRoot.firstChild) {
+            contRoot.removeChild(contRoot.firstChild);
+        }
+
+        // 2. Iterate over each container item and append to containersRoot
+        containers.forEach(item => {
+            const containerLink = document.createElement('a');
+            containerLink.href = "#"; // You can modify the href as required
+            containerLink.className = 'text-dark container';
+
+            // Create the status bulb and assign the appropriate class
+            const statusBulb = document.createElement('span');
+            statusBulb.className = 'bulb ' + (item.isAlive ? 'alive' : 'dead');
+
+            // Append the status bulb and container name
+            containerLink.appendChild(statusBulb);
+            containerLink.appendChild(document.createTextNode(item.shortName));
+
+            // Click event to update the selected container
+            containerLink.addEventListener('click', function() {
+                // Remove the selected-container class from any other container
+                const selected = document.querySelector('a.container.selected');
+                if (selected) {
+                    selected.classList.remove('selected');
+                }
+
+                // Add the selected-container class to the clicked container
+                containerLink.classList.add('selected' +
+                    '');
+            });
+
+            contRoot.appendChild(containerLink);
+        });
+    }
+
+
+    async function updateContainers () {
+        try {
+            const resp = await fetch('/api/container', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            const respJson = await resp.json();
+
+            if (resp.status <= 299) {
+                console.log('success get containers');
+                await renderContainers(respJson.containers);
+            } else {
+                const errorMessage = respJson.message || 'Something went wrong';
+                console.log(errorMessage);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
         const logoutLink = document.getElementById('logoutLink');
 
         logoutLink.addEventListener('click', function () {
-            console.log('logout');
-            document.cookie = 'default='
-            window.location.href = "/";
+            logout();
         });
+
+        await updateContainers();
     });
 </script>
 

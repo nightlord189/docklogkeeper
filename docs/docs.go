@@ -65,9 +65,53 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/container": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "container"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GetContainersResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "entity.ContainerInfo": {
+            "type": "object",
+            "properties": {
+                "isAlive": {
+                    "type": "boolean"
+                },
+                "shortName": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.AuthRequest": {
             "type": "object",
             "properties": {
@@ -85,6 +129,17 @@ const docTemplate = `{
                 "data": {},
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "handler.GetContainersResponse": {
+            "type": "object",
+            "properties": {
+                "containers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.ContainerInfo"
+                    }
                 }
             }
         }

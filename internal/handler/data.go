@@ -1,6 +1,13 @@
 package handler
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/nightlord189/docklogkeeper/internal/entity"
+)
+
+type GetContainersResponse struct {
+	Containers []entity.ContainerInfo `json:"containers"`
+}
 
 type AuthRequest struct {
 	Username string `json:"username"`

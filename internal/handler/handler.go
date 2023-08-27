@@ -75,6 +75,7 @@ func (h *Handler) Run() error {
 	})
 
 	router.POST("/api/auth", h.Auth)
+	router.GET("/api/container", h.CookieAuthMdw, h.GetContainers)
 
 	htmlPages := []string{
 		"static/web/auth.html",
