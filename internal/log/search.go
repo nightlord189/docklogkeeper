@@ -32,5 +32,6 @@ func (a *Adapter) SearchLines(ctx context.Context, shortName string, req SearchR
 			log.Ctx(ctx).Err(err).Msg("close file error")
 		}
 	}
+	reverseLines(lines)
 	return lines
 }

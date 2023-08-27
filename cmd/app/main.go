@@ -69,8 +69,6 @@ func main() {
 		stdLog.Fatalf("run router error: %v", err)
 	}
 
-	// TODO: get and render logs
 	// TODO: regular update of containers and logs
-	// TODO: button for update logs
-	// TODO: button for update containers list
+	// TODO: generator for number-by-number logs
 }

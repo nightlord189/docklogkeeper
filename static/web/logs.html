@@ -30,7 +30,7 @@
         }
 
         .log-window {
-            height: calc(100vh - 110px);
+            height: calc(100vh - 140px);
             border: 1px solid #ddd;
             overflow-y: scroll;
             padding: 10px;
@@ -72,7 +72,11 @@
         <div class="col-2 left-menu">
             <h3><a href="/" class="text-primary">DockLogKeeper</a></h3>
             <a id="logoutLink" href="#" class="text-secondary">Logout</a>
-            <h5 class="mt-4">Containers:</h5>
+            <h5 class="d-flex justify-content-between align-items-center">
+                Containers:
+                <!-- Update button next to "Containers:" -->
+                <button id="updateContainers" class="btn btn-sm btn-secondary">Update</button>
+            </h5>
             <div id="containersRoot" >
                 <a href="#" class="text-dark container selected"><span class="bulb dead"></span>Container 1</a>
                 <a href="#" class="text-dark container"><span class="bulb alive"></span>Container 2</a>
@@ -86,6 +90,9 @@
             <!-- Upper block with search bar -->
             <form id="searchForm">
                 <div class="input-group mb-3 mt-3">
+                    <div class="input-group-prepend">
+                        <button id="updateLogsButton" class="btn btn-secondary" type="button">Update</button>
+                    </div>
                     <input id="searchInput" type="text" class="form-control" placeholder="Search logs..." aria-label="Search logs">
                     <div class="input-group-append">
                         <button id="findButton" class="btn btn-primary" type="button">Find</button>
@@ -99,6 +106,7 @@
                 Log entry 1<br> Log entry 2<br> Log entry 3<br>
                 <!-- ... -->
             </div>
+            <button id="nextLogsButton" class="btn btn-primary mt-2">Next</button>
         </div>
     </div>
 </div>
@@ -121,6 +129,8 @@
             return
         }
         currentContainer = newVal;
+        currentChunkNumber = 0;
+        currentOffset = 0;
         renderLogs(null, false, 'Loading...');
         await getLogs();
     }
@@ -174,8 +184,8 @@
         });
     }
 
-
     async function updateContainers () {
+        document.getElementById('updateContainers').disabled = true;
         try {
             const resp = await fetch('/api/container', {
                 method: 'GET',
@@ -195,6 +205,7 @@
         } catch (err) {
             console.log(err);
         }
+        document.getElementById('updateContainers').disabled = false;
     }
 
     function renderLogs (logs, append, messageForEmpty) {
@@ -204,7 +215,7 @@
             return
         }
         if (append) {
-            if (logsRoot.innerHTML === 'Loading...' || logsRoot.innerHTML === 'Not found') {
+            if (logsRoot.innerHTML === 'Loading...' || logsRoot.innerHTML === 'Not found' || logsRoot.innerHTML === 'There is no logs') {
                 logsRoot.innerHTML = '';
             }
             logsRoot.innerHTML += logs.join('<br>');
@@ -251,7 +262,9 @@
                 currentChunkNumber = respJson.chunkNumber;
                 currentOffset = respJson.offset;
 
-                renderLogs(respJson.records, true, 'Not found');
+                console.log(`container ${currentContainer} chunk ${currentChunkNumber} offset ${currentOffset}`);
+
+                renderLogs(respJson.records, true, 'There is no logs');
             } else {
                 const errorMessage = respJson.message || 'Something went wrong';
                 console.log(errorMessage);
@@ -271,6 +284,10 @@
         const searchInput = document.getElementById('searchInput');
         const findButton = document.getElementById('findButton');
         const searchForm = document.getElementById('searchForm');
+
+        const updContainersBtn = document.getElementById('updateContainers');
+        const updLogsBtn = document.getElementById('updateLogsButton');
+        const nextLogsButton = document.getElementById('nextLogsButton');
 
         async function searchListener (event) {
             event.preventDefault();
@@ -295,6 +312,23 @@
 
         searchForm.addEventListener('submit', searchListener);
         findButton.addEventListener('click', searchListener);
+
+        updContainersBtn.addEventListener('click', updateContainers);
+
+        updLogsBtn.addEventListener('click', async function () {
+            updLogsBtn.disabled = true;
+            currentChunkNumber = 0;
+            currentOffset = 0;
+            await getLogs();
+            updLogsBtn.disabled = true;
+        });
+
+        nextLogsButton.addEventListener('click', async function () {
+            console.log('next logs');
+            nextLogsButton.disabled = true;
+            await getLogs();
+            nextLogsButton.disabled = false;
+        })
 
         await updateContainers();
     });
