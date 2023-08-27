@@ -36,11 +36,7 @@ func (h *Handler) SearchLogs(c *gin.Context) {
 		return
 	}
 
-	logs, err := h.LogAdapter.SearchLines(ctx, shortName, log.SearchRequest{Contains: req.Contains})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, GenericError(err.Error()))
-		return
-	}
+	logs := h.LogAdapter.SearchLines(ctx, shortName, log.SearchRequest{Contains: req.Contains})
 
 	c.JSON(http.StatusOK, SearchLogsResponse{Records: logs})
 }

@@ -114,6 +114,7 @@
 
     function setCurrentContainer (newVal) {
         currentContainer = newVal;
+        renderLogs(null, 'Loading...');
     }
 
     window.onload = function() {
@@ -188,11 +189,11 @@
         }
     }
 
-    function renderLogs (logs, fromSearch) {
+    function renderLogs (logs, messageForEmpty) {
         const logsRoot = document.getElementById('logsRoot');
         logsRoot.innerHTML = '';
-        if (logs.length === 0) {
-            logsRoot.innerHTML = fromSearch ? 'Not found' : "No logs";
+        if (!logs || logs.length === 0) {
+            logsRoot.innerHTML = messageForEmpty;
             return
         }
 
@@ -211,7 +212,7 @@
 
             if (resp.status <= 299) {
                 console.log('success search');
-                renderLogs(respJson.records, true);
+                renderLogs(respJson.records, 'Not found');
             } else {
                 const errorMessage = respJson.message || 'Something went wrong';
                 console.log(errorMessage);

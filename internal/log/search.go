@@ -3,16 +3,15 @@ package log
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"github.com/rs/zerolog/log"
 	"path"
 	"strings"
 )
 
-func (a *Adapter) SearchLines(ctx context.Context, shortName string, req SearchRequest) ([]string, error) {
+func (a *Adapter) SearchLines(ctx context.Context, shortName string, req SearchRequest) []string {
 	fileEntries := a.getSortedFilesByDir(shortName)
 	if len(fileEntries) == 0 {
-		return nil, fmt.Errorf("there is no log files for this container")
+		return []string{}
 	}
 
 	lines := make([]string, 0, 10)
@@ -33,5 +32,5 @@ func (a *Adapter) SearchLines(ctx context.Context, shortName string, req SearchR
 			log.Ctx(ctx).Err(err).Msg("close file error")
 		}
 	}
-	return lines, nil
+	return lines
 }
