@@ -30,9 +30,10 @@ func main() {
 
 	zerolog.Ctx(ctx).Debug().Msg("start #2")
 
-	logAdapter := log.New(cfg.Log)
-
-	defer logAdapter.Close()
+	logAdapter, err := log.New(cfg.Log)
+	if err != nil {
+		stdLog.Fatalf("error init log adapter: %v", err)
+	}
 
 	dock, err := docker2.New(ctx, cfg, logAdapter)
 	if err != nil {

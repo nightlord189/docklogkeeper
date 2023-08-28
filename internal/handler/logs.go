@@ -3,8 +3,8 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/nightlord189/docklogkeeper/internal/entity"
-	"github.com/nightlord189/docklogkeeper/internal/log"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -13,8 +13,8 @@ import (
 // @Accept  json
 // @Produce json
 // @Param shortname path string true "container's short name"
-// @Param chunk_number query int false "number of chunk"
-// @Param offset query int false "offset in chunk"
+// @Param direction query string true "future or past"
+// @Param cursor query int false "cursor"
 // @Param limit query int false "limit of result lines"
 // @Success 200 {object} log.GetLogsResponse
 // @Failure 400 {object} GenericResponse
@@ -26,7 +26,7 @@ func (h *Handler) GetLogs(c *gin.Context) {
 	logger := zerolog.Ctx(c.Request.Context()).With().Str("handler_action", "GetLogs").Logger()
 	ctx := logger.WithContext(c.Request.Context())
 
-	var req GetLogsRequest
+	var req entity.GetLogsRequest
 	err := c.ShouldBindQuery(&req) // <-check there
 	if err != nil {
 		c.JSON(http.StatusBadRequest, GenericErrorf("binding query error: %v", err))
@@ -44,26 +44,11 @@ func (h *Handler) GetLogs(c *gin.Context) {
 		return
 	}
 
-	var resp log.GetLogsResponse
+	req.ShortName = shortName
 
-	switch req.Direction {
-	case entity.DirFuture:
-		resp, err = h.LogAdapter.GetLogsUpdate(ctx, log.GetLinesRequest{
-			ShortName:   shortName,
-			ChunkNumber: req.ChunkNumber,
-			Offset:      req.Offset,
-			Limit:       req.Limit,
-		})
-	case entity.DirPast:
-		resp, err = h.LogAdapter.GetLogsNext(ctx, log.GetLinesRequest{
-			ShortName:   shortName,
-			ChunkNumber: req.ChunkNumber,
-			Offset:      req.Offset,
-			Limit:       req.Limit,
-		})
-	}
-
+	resp, err := h.LogAdapter.GetLogs(req)
 	if err != nil {
+		log.Ctx(ctx).Err(err).Msg("get logs error")
 		c.JSON(http.StatusInternalServerError, GenericError(err.Error()))
 		return
 	}

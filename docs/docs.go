@@ -127,14 +127,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "number of chunk",
-                        "name": "chunk_number",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "offset in chunk",
-                        "name": "offset",
+                        "description": "cursor",
+                        "name": "cursor",
                         "in": "query"
                     },
                     {
@@ -148,7 +142,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/log.GetLinesResponse"
+                            "$ref": "#/definitions/log.GetLogsResponse"
                         }
                     },
                     "400": {
@@ -281,13 +275,13 @@ const docTemplate = `{
                 }
             }
         },
-        "log.GetLinesResponse": {
+        "log.GetLogsResponse": {
             "type": "object",
             "properties": {
-                "chunkNumber": {
+                "firstCursor": {
                     "type": "integer"
                 },
-                "offset": {
+                "lastCursor": {
                     "type": "integer"
                 },
                 "records": {

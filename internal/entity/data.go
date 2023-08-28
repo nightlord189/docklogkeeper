@@ -10,16 +10,18 @@ const (
 )
 
 type GetLogsRequest struct {
-	ShortName   string
-	Direction   Direction `form:"direction"`
-	ChunkNumber int       `form:"chunk_number"`
-	Position    int       `form:"position"`
-	Limit       int       `form:"limit"`
+	ShortName string
+	Direction Direction `form:"direction"`
+	Cursor    int64     `form:"cursor"`
+	Limit     int       `form:"limit"`
 }
 
 func (r *GetLogsRequest) IsValid() error {
 	if r.Limit == 0 {
 		return fmt.Errorf("limit should be positive")
+	}
+	if r.Direction != DirFuture && r.Direction != DirPast {
+		return fmt.Errorf("invalid direction")
 	}
 	return nil
 }

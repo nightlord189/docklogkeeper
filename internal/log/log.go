@@ -4,12 +4,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"github.com/rs/zerolog/log"
 	"io"
-	"io/fs"
-	"os"
-	"path"
 )
 
 const defaultFileName = "1.txt"
@@ -25,16 +21,10 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 
 	ctx = log.Ctx(ctx).With().Str("short_name", shortName).Logger().WithContext(ctx)
 
-	fileData := a.getFileData(ctx, shortName)
-	if fileData == nil {
-		return
-	}
-
-	lastLine := ""
-	linesCount := 0
-
 	lastTimestamp := a.lastTimestamps[shortName]
 	foundNewLogs := false
+
+	logs := make([]logDataDB, 0, 10)
 
 	for {
 		readBytes, err := buf.ReadBytes('\n')
@@ -44,141 +34,51 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 			}
 			break
 		}
-		if len(readBytes) > 12 {
-			lastLine = string(readBytes[8:])
-
-			ttFromLog := getTimestampFromLog(lastLine)
-			if !foundNewLogs && timeGreaterOrEqualNil(lastTimestamp, ttFromLog) { // check also for equal
-				//log.Ctx(ctx).Debug().Msgf("skipping line because timestamp, last_tt: %v, current_tt: %v", lastTimestamp, ttFromLog)
-				continue
-			} else {
-				foundNewLogs = true
-			}
+		if len(readBytes) < 8 {
+			continue
 		}
-		n, _ := fileData.Writer.Write(readBytes[8:]) // strip header from docker
-		fileData.Size += int64(n)
-		linesCount++
+		ttFromLog := getTimestampFromLog(string(readBytes[8:]))
+		if !foundNewLogs && timeGreaterOrEqualNil(lastTimestamp, ttFromLog) { // check also for equal
+			//log.Ctx(ctx).Debug().Msgf("skipping line because timestamp, last_tt: %v, current_tt: %v", lastTimestamp, ttFromLog)
+			continue
+		} else {
+			foundNewLogs = true
+		}
+		logs = append(logs, logDataDB{
+			ContainerName: shortName,
+			LogText:       string(readBytes[8:]),
+			CreatedAt:     ttFromLog.Unix(),
+		})
 	}
 
-	if linesCount == 0 {
+	if len(logs) == 0 {
 		return
 	}
 
-	fmt.Printf("lines count: %d, lastLine: %s\n", linesCount, lastLine)
+	if err := a.ensureContainer(shortName); err != nil {
+		log.Ctx(ctx).Err(err).Msg("ensure container error")
+	}
+	if err := a.insertLogs(logs); err != nil {
+		log.Ctx(ctx).Err(err).Msg("insert logs error")
+	}
 
-	a.currentFiles[shortName] = fileData
+	//fmt.Printf("lines count: %d, lastLine: %s\n", len(logs), logs[len(logs)-1].LogText)
 
-	a.checkCurrentChunkSize(ctx, shortName)
-
-	timestampFromLog := getTimestampFromLog(lastLine)
+	timestampFromLog := getTimestampFromLog(logs[len(logs)-1].LogText)
 	if timestampFromLog != nil {
 		a.lastTimestamps[shortName] = timestampFromLog
-		fmt.Println(containerName, "last timestamp", timestampFromLog)
+		//fmt.Println(containerName, "last timestamp", timestampFromLog)
 	}
-}
-
-func (a *Adapter) getFileData(ctx context.Context, shortName string) *FileData {
-	fileData, exists := a.currentFiles[shortName]
-	if !exists {
-		ensureDir(path.Join(a.Config.Dir, shortName))
-		fileWriter := a.getLastChunkFromDir(ctx, shortName)
-		if fileWriter == nil {
-			return nil
-		}
-		fileData = &FileData{
-			Writer: fileWriter,
-			Size:   getSize(ctx, fileWriter),
-		}
-		a.currentFiles[shortName] = fileData
-	}
-	return fileData
-}
-
-func (a *Adapter) checkCurrentChunkSize(ctx context.Context, shortName string) {
-	fileData := a.currentFiles[shortName]
-	if fileData.Size >= a.Config.ChunkSize {
-		log.Ctx(ctx).Info().Int64("current_size", fileData.Size).
-			Str("current_chunk", fileData.Writer.Name()).Msg("current chunk size is too big, creating new chunk")
-		// close file
-		if err := fileData.Writer.Close(); err != nil {
-			log.Ctx(ctx).Err(err).Str("filename", fileData.Writer.Name()).Msg("close current chunk error")
-		}
-		// increase number
-		nextChunkName := getNextFileName(ctx, fileData.Writer.Name())
-		// open new file
-		newWriter := openFile(ctx, path.Join(a.Config.Dir, shortName, nextChunkName), false)
-		log.Ctx(ctx).Info().Int64("current_size", fileData.Size).Str("new_chunk", nextChunkName).Msg("new chunk")
-		if newWriter == nil {
-			return
-		}
-		a.currentFiles[shortName] = &FileData{
-			Writer: newWriter,
-			Size:   getSize(ctx, newWriter),
-		}
-	}
-}
-
-func (a *Adapter) getLastChunkFromDir(ctx context.Context, shortName string) *os.File {
-	fileName := defaultFileName
-
-	lastFileInfo := a.getLastFileNameFromDir(ctx, shortName)
-	if lastFileInfo != nil {
-		if lastFileInfo.Size() >= a.Config.ChunkSize {
-			fileName = getNextFileName(ctx, lastFileInfo.Name())
-			log.Ctx(ctx).Info().Str("old_filename", lastFileInfo.Name()).Msgf("last chunk size is too big, creating next chunk %s", fileName)
-		} else {
-			fileName = lastFileInfo.Name()
-			log.Ctx(ctx).Info().Str("filename", fileName).Msgf("opening last existing chunk")
-		}
-	} else {
-		log.Ctx(ctx).Info().Str("filename", fileName).Msgf("opening first chunk")
-	}
-
-	fileWriter := openFile(ctx, path.Join(a.Config.Dir, shortName, fileName), false)
-
-	return fileWriter
-}
-
-func (a *Adapter) getLastFileNameFromDir(ctx context.Context, shortName string) fs.FileInfo {
-	fSortedFiles := a.getSortedFilesByDir(shortName)
-
-	if len(fSortedFiles) == 0 {
-		return nil
-	}
-
-	lastFile := fSortedFiles[len(fSortedFiles)-1]
-
-	fileInfo, err := lastFile.Info()
-	if err != nil {
-		log.Ctx(ctx).Err(err).Str("file_name", lastFile.Name()).Msg("get file info error")
-	}
-
-	return fileInfo
-}
-
-func (a *Adapter) getSortedFilesByDir(shortName string) []os.DirEntry {
-	dir := path.Join(a.Config.Dir, shortName)
-	if _, err := os.Stat(dir); err != nil {
-		return nil
-	}
-	files, err := os.ReadDir(dir)
-	if err != nil {
-		return nil
-	}
-
-	if len(files) == 0 {
-		return nil
-	}
-
-	fSortedFiles := getFilteredAndSortedFiles(files)
-
-	return fSortedFiles
 }
 
 func (a *Adapter) GetShortContainerName(containerName string) string {
 	result := a.names[containerName]
 	if result == "" {
-		result = calcShortContainerName(containerName)
+		result = a.getMappedName(containerName)
+		if result == "" {
+			result = calcShortContainerName(containerName)
+			a.setMappedName(containerName, result)
+		}
 		a.names[containerName] = result
 	}
 	return result

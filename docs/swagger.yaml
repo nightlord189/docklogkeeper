@@ -33,11 +33,11 @@ definitions:
           type: string
         type: array
     type: object
-  log.GetLinesResponse:
+  log.GetLogsResponse:
     properties:
-      chunkNumber:
+      firstCursor:
         type: integer
-      offset:
+      lastCursor:
         type: integer
       records:
         items:
@@ -115,13 +115,9 @@ paths:
         name: direction
         required: true
         type: string
-      - description: number of chunk
+      - description: cursor
         in: query
-        name: chunk_number
-        type: integer
-      - description: offset in chunk
-        in: query
-        name: offset
+        name: cursor
         type: integer
       - description: limit of result lines
         in: query
@@ -133,7 +129,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/log.GetLinesResponse'
+            $ref: '#/definitions/log.GetLogsResponse'
         "400":
           description: Bad Request
           schema:

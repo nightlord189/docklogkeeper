@@ -25,9 +25,8 @@ type HTTPConfig struct {
 
 type LogConfig struct {
 	UpdateFrequency int    `yaml:"update_frequency" env:"UPDATE_FREQUENCY"`
-	Dir             string `yaml:"dir" env:"LOG_DIR"`
+	DB              string `yaml:"db" env:"LOG_DB"`
 	Retention       int64  `yaml:"retention" env:"LOG_RETENTION"`
-	ChunkSize       int64  `yaml:"chunk_size" env:"LOG_CHUNK_SIZE"`
 }
 
 func LoadConfig(configFilePath string) (Config, error) {

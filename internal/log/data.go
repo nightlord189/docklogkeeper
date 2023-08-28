@@ -6,6 +6,6 @@ type SearchRequest struct {
 
 type GetLogsResponse struct {
 	Records     []string `json:"records"`
-	ChunkNumber int      `json:"chunkNumber"`
-	Offset      int      `json:"offset"`
+	FirstCursor int64    `json:"firstCursor"`
+	LastCursor  int64    `json:"lastCursor"`
 }

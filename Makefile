@@ -22,3 +22,15 @@ deploy:
 	tar -cvf ./deploy.tar  ./*
 	caprover deploy -t ./deploy.tar --host https://captain.app.tinygreencat.dev --caproverPassword ${CAPROVER_PASSWORD} --appName docklogkeeper
 	rm deploy.tar
+
+migrate-new:
+	goose -s -dir configs/migrations/local create $(name) sql
+
+migrate:
+	goose -dir configs/migrations/local sqlite3 ./logs.db up
+
+migrate-down:
+	goose -dir configs/migrations/local sqlite3 ./logs.db down
+
+migrate-reset:
+	goose -dir configs/migrations/local sqlite3 ./logs.db reset

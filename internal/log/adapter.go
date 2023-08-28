@@ -1,52 +1,51 @@
 package log
 
 import (
-	"context"
-	"errors"
+	"database/sql"
+	"fmt"
 	"github.com/nightlord189/docklogkeeper/internal/config"
-	"github.com/rs/zerolog/log"
-	"os"
+	"github.com/pressly/goose/v3"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"time"
 )
 
 type Adapter struct {
 	Config         config.LogConfig
+	DB             *gorm.DB
 	names          map[string]string     //srv-captain--jsonbeautifier.1.qa9gcu6usinw06lqcfu286wsc -> srv-captain--jsonbeautifier
-	currentFiles   map[string]*FileData  //srv-captain--jsonbeautifier -> srv-captain--jsonbeautifier-log-1.txt
 	lastTimestamps map[string]*time.Time //srv-captain--jsonbeautifier->"timestamp..."
 }
 
-type FileData struct {
-	Writer *os.File
-	Size   int64
-}
+func New(cfg config.LogConfig) (*Adapter, error) {
+	dbLogger := logger.Default.LogMode(logger.Info)
 
-func New(cfg config.LogConfig) *Adapter {
-	adapter := &Adapter{
+	db, err := gorm.Open(sqlite.Open(cfg.DB), &gorm.Config{Logger: dbLogger})
+	if err != nil {
+		return nil, fmt.Errorf("open local database error: %w", err)
+	}
+
+	rawDB, _ := db.DB()
+
+	if err := migrate(rawDB, cfg.DB); err != nil {
+		return nil, fmt.Errorf("migrate error: %w", err)
+	}
+	return &Adapter{
 		Config:         cfg,
+		DB:             db,
 		names:          make(map[string]string, 10),
-		currentFiles:   make(map[string]*FileData, 10),
 		lastTimestamps: make(map[string]*time.Time, 10),
-	}
-	ensureDir(adapter.Config.Dir)
-	return adapter
+	}, nil
 }
 
-func ensureDir(dir string) {
-	if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(dir, os.ModePerm)
-		if err != nil {
-			log.Ctx(context.Background()).Info().Msgf("directory create error: %s %v", dir, err)
-			return
-		}
-		log.Ctx(context.Background()).Info().Msgf("directory created: %s", dir)
-		return
+func migrate(db *sql.DB, dbPath string) error {
+	if err := goose.SetDialect("sqlite3"); err != nil {
+		return fmt.Errorf("error on set goose dialect: %w", err)
 	}
-	log.Ctx(context.Background()).Info().Msgf("directory already exists: %s", dir)
-}
 
-func (a *Adapter) Close() {
-	for _, f := range a.currentFiles {
-		f.Writer.Close()
+	if err := goose.Up(db, "./configs/migrations/local"); err != nil {
+		return fmt.Errorf("error on applying migrations: %w", err)
 	}
+	return nil
 }

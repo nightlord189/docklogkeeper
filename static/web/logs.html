@@ -122,27 +122,22 @@
 
     let currentContainer = '';
 
-    let lastChunkNumber = 0; // for next
-    let lastOffset = 0; // for next
-
-    let nextChunkNumber = 0;
-    let nextOffset = 0;
+    let lastLogID = 0; // for next
+    let firstLogID = 0; // for past
 
     async function setCurrentContainer (newVal) {
         if (newVal === currentContainer) {
             return
         }
         currentContainer = newVal;
-        lastChunkNumber = 0;
-        lastOffset = 0;
-        nextChunkNumber = 0;
-        nextOffset = 0;
+        lastLogID = 0;
+        firstLogID = 0;
         renderLogs([], appendValues.NONE, 'Loading...');
 
-        const resp = await getLogs(lastChunkNumber, lastOffset);
+        const resp = await getLogs('future', 0);
 
-        lastChunkNumber = resp.chunkNumber;
-        lastOffset = resp.offset;
+        firstLogID = resp.firstCursor;
+        lastLogID = resp.lastCursor;
         renderLogs(resp.records, appendValues.NONE, 'There is no logs');
     }
 
@@ -236,7 +231,7 @@
                 break;
             case appendValues.DOWN:
                 if (logs.length > 0) {
-                    logsRoot.innerHTML += logs.join('<br>');
+                    logsRoot.innerHTML += '<br>' + logs.join('<br>');
                 }
                 break;
             case appendValues.UP:
@@ -249,9 +244,9 @@
         }
     }
 
-    async function getLogs (dir, chunkNumber, offset) {
+    async function getLogs (dir, cursor) {
         try {
-            const resp = await fetch(`/api/container/${currentContainer}/log?direction=${dir}&chunk_number=${chunkNumber}&offset=${offset}&limit=${limit}`, {
+            const resp = await fetch(`/api/container/${currentContainer}/log?direction=${dir}&cursor=${cursor}&limit=${limit}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -260,7 +255,7 @@
             const respJson = await resp.json();
 
             if (resp.status <= 299) {
-                console.log(`got logs for container ${currentContainer} chunk ${chunkNumber} offset ${offset}`);
+                console.log(`got logs for container ${currentContainer} cursor ${cursor}`);
 
                 return respJson;
             } else {
@@ -300,14 +295,14 @@
         const updLogsBtn = document.getElementById('updateLogsButton');
         updLogsBtn.disabled = true;
 
-        const resp = await getLogs(lastChunkNumber, lastOffset);
-        if (resp.chunkNumber === lastChunkNumber && resp.offset === lastOffset) {
+        const resp = await getLogs('future', lastLogID);
+        if (resp.records.length === 0) {
             updLogsBtn.disabled = false;
             return
         }
 
-        lastChunkNumber = resp.chunkNumber;
-        lastOffset = resp.offset;
+        lastLogID = resp.lastCursor;
+
         renderLogs(resp.records, appendValues.UP, '');
 
         updLogsBtn.disabled = false;
@@ -317,14 +312,14 @@
         const nextLogsButton = document.getElementById('nextLogsButton');
         console.log('next logs');
 
-        const resp = await getLogs(nextChunkNumber, nextOffset);
-        if (resp.chunkNumber === nextChunkNumber && resp.offset === nextOffset) {
+        const resp = await getLogs('past', firstLogID);
+        if (resp.records.length === 0) {
             nextLogsButton.disabled = false;
             return
         }
 
-        nextChunkNumber = resp.chunkNumber;
-        nextOffset = resp.offset;
+        firstLogID = resp.firstCursor;
+
         renderLogs(resp.records, appendValues.DOWN, '');
 
         nextLogsButton.disabled = false;
