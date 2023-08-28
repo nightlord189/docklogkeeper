@@ -46,6 +46,14 @@ func (a *Adapter) deleteOldLogs(beforeThan int64) error {
 	return a.DB.Exec("delete from log where created_at < ?", beforeThan).Error
 }
 
+func (a *Adapter) DeleteContainersWithoutLogs() error {
+	return a.DB.Exec(`delete from container where name in (select c.name as cname
+from container c 
+left join log on log.container_name = c.name
+group by c.name
+having count(log.id) = 0)`).Error
+}
+
 func (a *Adapter) searchLogs(shortName, like string) ([]logDataDB, error) {
 	result := make([]logDataDB, 0, 100)
 	err := a.DB.Where(`container_name = ? and log_text like ? order by id desc`, shortName, fmt.Sprintf("%%%s%%", like)).Find(&result).Error

@@ -66,11 +66,19 @@ func main() {
 		}
 	}()
 
+	go func() {
+		ticker := time.NewTicker(30 * time.Minute)
+		for range ticker.C {
+			if err := logAdapter.DeleteContainersWithoutLogs(); err != nil {
+				zerolog.Ctx(ctx).Err(err).Msg("delete containers without logs error")
+			}
+		}
+	}()
+
 	if err := handlerInst.Run(); err != nil {
 		stdLog.Fatalf("run router error: %v", err)
 	}
 
 	// TODO: regular update of containers
 	// TODO: regular update of logs
-	// TODO: fix rerender in case of click-click to update
 }
