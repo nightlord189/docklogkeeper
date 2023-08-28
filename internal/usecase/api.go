@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"github.com/rs/zerolog/log"
+	"sort"
 )
 
 func (u *Usecase) GetContainers(ctx context.Context) ([]entity.ContainerInfo, error) {
@@ -46,6 +47,10 @@ func (u *Usecase) GetContainers(ctx context.Context) ([]entity.ContainerInfo, er
 			})
 		}
 	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].ShortName < result[j].ShortName
+	})
 
 	return result, nil
 }
