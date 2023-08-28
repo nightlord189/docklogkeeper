@@ -9,47 +9,21 @@ import (
 	"github.com/rs/zerolog/log"
 	"io"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 )
 
 func (a *Adapter) GetLogs(ctx context.Context, req entity.GetLogsRequest) (GetLogsResponse, error) {
-	switch {
-	case req.Direction == entity.DirFuture && req.ChunkNumber == 0 && req.Position == 0:
-		panic("read from last chunk from size to start")
-	case req.Direction == entity.DirFuture && req.ChunkNumber > 0:
-		panic("read from specific chunk from pos to end")
-	case req.Direction == entity.DirPast && req.ChunkNumber > 0:
-		panic("read from specific chunk from pos to start")
-	default:
-		return GetLogsResponse{}, fmt.Errorf("invalid request")
-	}
-}
-
-func (a *Adapter) readLogs(ctx context.Context, req entity.GetLogsRequest) (GetLogsResponse, error) {
 	fileEntries := a.getSortedFilesByDir(req.ShortName)
 	if len(fileEntries) == 0 {
 		return GetLogsResponse{Records: []string{}}, nil
 	}
 
 	currentChunk := req.ChunkNumber
-	currentPos := req.Position
 
 	if currentChunk == 0 {
-		parsedChunkNumber, err := strconv.Atoi(strings.TrimSuffix(fileEntries[len(fileEntries)-1].Name(), ".txt"))
-		if err != nil {
-			return GetLogsResponse{}, fmt.Errorf("parse last chunk file number error: %w", err)
-		}
-		currentChunk = parsedChunkNumber
-
-		if currentPos == 0 {
-			finfo, err := fileEntries[len(fileEntries)-1].Info()
-			if err != nil {
-				log.Ctx(ctx).Err(err).Str("filename", fileEntries[len(fileEntries)-1].Name()).Msg("get file info error")
-				return GetLogsResponse{}, fmt.Errorf("get file info error")
-			}
-			currentPos = int(finfo.Size())
-		}
+		currentChunk = getChunkNumberFromFileName(fileEntries[len(fileEntries)-1].Name())
 	}
 
 	chunkIndex := getIndexOfChunk(currentChunk, fileEntries)
@@ -57,10 +31,39 @@ func (a *Adapter) readLogs(ctx context.Context, req entity.GetLogsRequest) (GetL
 		return GetLogsResponse{}, fmt.Errorf("index of the first chunk is invalid")
 	}
 
-	if req.Direction == entity.DirFuture {
-		
+	pos := req.Position
+	var (
+		eof bool
+		err error
+	)
+
+	lines := make([]string, 0, 100)
+
+	switch {
+	case req.Direction == entity.DirFuture && req.ChunkNumber == 0 && req.Position == 0:
+		for i := chunkIndex; i >= 0; i-- {
+			currentChunk = getChunkNumberFromFileName(fileEntries[i].Name())
+			pos, eof, err = readLogFileBackward(ctx, path.Join(a.Config.Dir, req.ShortName, fileEntries[i].Name()), pos, lines, req.Limit)
+			if eof || err != nil {
+				break
+			}
+		}
+	case req.Direction == entity.DirFuture && req.ChunkNumber > 0:
+		panic("read from specific chunk from pos to end")
+	case req.Direction == entity.DirPast && req.ChunkNumber > 0:
+		panic("read from specific chunk from pos to start")
+	default:
+		return GetLogsResponse{}, fmt.Errorf("invalid request")
 	}
+
+	return GetLogsResponse{
+		Records:     lines,
+		ChunkNumber: currentChunk,
+		Offset:      pos,
+	}, err
 }
+
+func
 
 // from start (or initialPos) to end
 // returns pos, isEOF, err
@@ -159,10 +162,4 @@ func getIndexOfChunk(chunkNumber int, chunks []os.DirEntry) int {
 		}
 	}
 	return -1
-}
-
-func reverseLines(lines []string) {
-	for i, j := 0, len(lines)-1; i < j; i, j = i+1, j-1 {
-		lines[i], lines[j] = lines[j], lines[i] //reverse the slice
-	}
 }

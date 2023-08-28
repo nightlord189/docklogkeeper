@@ -12,6 +12,20 @@ import (
 	"time"
 )
 
+func getChunkNumberFromFileName(fileName string) int {
+	parsedChunkNumber, err := strconv.Atoi(strings.TrimSuffix(fileName, ".txt"))
+	if err != nil {
+		return -1
+	}
+	return parsedChunkNumber
+}
+
+func reverseLines(lines []string) {
+	for i, j := 0, len(lines)-1; i < j; i, j = i+1, j-1 {
+		lines[i], lines[j] = lines[j], lines[i] //reverse the slice
+	}
+}
+
 func timeGreaterOrEqualNil(t1, t2 *time.Time) bool {
 	return t1 != nil && t2 != nil && t1.UnixMicro() >= t2.UnixMicro()
 }
