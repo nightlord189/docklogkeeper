@@ -119,6 +119,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "future or past",
+                        "name": "direction",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "number of chunk",
                         "name": "chunk_number",

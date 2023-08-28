@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"github.com/nightlord189/docklogkeeper/internal/log"
 	"github.com/rs/zerolog"
 	"net/http"
@@ -15,7 +16,7 @@ import (
 // @Param chunk_number query int false "number of chunk"
 // @Param offset query int false "offset in chunk"
 // @Param limit query int false "limit of result lines"
-// @Success 200 {object} log.GetLinesResponse
+// @Success 200 {object} log.GetLogsResponse
 // @Failure 400 {object} GenericResponse
 // @Failure 401 {object} GenericResponse
 // @Failure 500 {object} GenericResponse
@@ -43,12 +44,25 @@ func (h *Handler) GetLogs(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.LogAdapter.GetLogs(ctx, log.GetLinesRequest{
-		ShortName:   shortName,
-		ChunkNumber: req.ChunkNumber,
-		Offset:      req.Offset,
-		Limit:       req.Limit,
-	})
+	var resp log.GetLogsResponse
+
+	switch req.Direction {
+	case entity.DirFuture:
+		resp, err = h.LogAdapter.GetLogsUpdate(ctx, log.GetLinesRequest{
+			ShortName:   shortName,
+			ChunkNumber: req.ChunkNumber,
+			Offset:      req.Offset,
+			Limit:       req.Limit,
+		})
+	case entity.DirPast:
+		resp, err = h.LogAdapter.GetLogsNext(ctx, log.GetLinesRequest{
+			ShortName:   shortName,
+			ChunkNumber: req.ChunkNumber,
+			Offset:      req.Offset,
+			Limit:       req.Limit,
+		})
+	}
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, GenericError(err.Error()))
 		return

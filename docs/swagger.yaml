@@ -110,6 +110,11 @@ paths:
         name: shortname
         required: true
         type: string
+      - description: future or past
+        in: query
+        name: direction
+        required: true
+        type: string
       - description: number of chunk
         in: query
         name: chunk_number
