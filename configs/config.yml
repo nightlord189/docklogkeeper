@@ -1,18 +1,16 @@
 log_level: debug
 
 http:
-  port: 8080
+  port: 3010
   gin_mode: debug
 
 auth:
   secret: nx5iZBiUqbYEUmzfV5Se
   password: keeper43
 
-
 log:
   update_frequency: 5
   retention: 604800 #1 week in seconds
-  chunk_size: 1048576 #1 MB in bytes
 
 db:
   db_file: ./logs.db
