@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DockLogKeeper</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .left-menu {
+            padding-top: 10px;
+            padding-left: 20px;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .left-menu a {
+            display: block;
+            margin: 10px 0;
+            text-decoration: none;
+        }
+
+        .log-window {
+            height: calc(100vh - 140px);
+            border: 1px solid #ddd;
+            overflow-y: scroll;
+            padding: 10px;
+        }
+
+        .bulb {
+            border-radius: 50%;      /* Make it round */
+            width: 10px;             /* Set width */
+            height: 10px;            /* Set height */
+            display: inline-block;   /* Inline with text */
+            margin-right: 5px;       /* Space before the container name */
+        }
+
+        .bulb.alive {
+            background-color: green;
+        }
+
+        .bulb.dead {
+            background-color: red;
+        }
+
+        .container {
+            padding-left: 5px;
+        }
+
+        .container.selected {
+            background-color: #e0e0e0;   /* Light grey background */
+            border-radius: 4px;          /* Rounded corners */
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid h-100">
+    <div class="row h-100">
+
+        <!-- Left vertical menu -->
+        <div class="col-2 left-menu">
+            <h3><a href="/" class="text-primary">DockLogKeeper</a></h3>
+            <a id="logoutLink" href="#" class="text-secondary">Logout</a>
+            <h5 class="d-flex justify-content-between align-items-center">
+                Containers:
+                <!-- Update button next to "Containers:" -->
+                <button id="updateContainers" class="btn btn-sm btn-secondary">Update</button>
+            </h5>
+            <div id="containersRoot" >
+                <a href="#" class="text-dark container selected"><span class="bulb dead"></span>Container 1</a>
+                <a href="#" class="text-dark container"><span class="bulb alive"></span>Container 2</a>
+                <a href="#" class="text-dark container"><span class="bulb alive"></span>Container 3</a>
+                <!-- ... add as many container links as you need -->
+            </div>
+        </div>
+
+        <!-- Right part -->
+        <div class="col-10">
+            <!-- Upper block with search bar -->
+            <form id="searchForm">
+                <div class="input-group mb-3 mt-3">
+                    <div class="input-group-prepend">
+                        <button id="updateLogsButton" class="btn btn-secondary" type="button">Update</button>
+                    </div>
+                    <input id="searchInput" type="text" class="form-control" placeholder="Search logs..." aria-label="Search logs">
+                    <div class="input-group-append">
+                        <button id="findButton" class="btn btn-primary" type="button">Find</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Scrollable window for logs -->
+            <div id="logsRoot" class="log-window">
+                Select container to see logs<br>
+            </div>
+            <button id="nextLogsButton" class="btn btn-primary mt-2">Next</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS, Popper.js, and jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="/js/main.js"></script>
+<script>
+    const limit = 100;
+
+    let currentContainer = '';
+    let currentContainers = [];
+
+    let lastLogID = 0; // for next
+    let firstLogID = 0; // for past
+
+    async function setCurrentContainer (newVal) {
+        if (newVal === currentContainer) {
+            return
+        }
+        currentContainer = newVal;
+        lastLogID = 0;
+        firstLogID = 0;
+        renderLogs([], appendValues.NONE, 'Loading...');
+
+        const resp = await getLogs('future', 0);
+
+        firstLogID = resp.firstCursor;
+        lastLogID = resp.lastCursor;
+        renderLogs(resp.records, appendValues.NONE, 'There is no logs');
+    }
+
+    window.onload = function() {
+        if (!isAuthorized()) {
+            console.log('user is not authorized');
+            window.location.href = '/';
+        }
+    };
+
+    function renderContainers(containers) {
+        if (arraysOfObjectsAreEqual(currentContainers, containers)) {
+            console.log(`containers didn't change`)
+            return
+        }
+
+        console.log(`rendering containers`);
+
+        currentContainers = containers;
+
+        const contRoot = document.getElementById('containersRoot');
+
+        // 1. Remove all children of containersRoot
+        while (contRoot.firstChild) {
+            contRoot.removeChild(contRoot.firstChild);
+        }
+
+        // 2. Iterate over each container item and append to containersRoot
+        containers.forEach(item => {
+            const containerLink = document.createElement('a');
+            containerLink.href = "#"; // You can modify the href as required
+            containerLink.setAttribute('data-itemId', item.shortName);
+            containerLink.className = 'text-dark container';
+
+            // Create the status bulb and assign the appropriate class
+            const statusBulb = document.createElement('span');
+            statusBulb.className = 'bulb ' + (item.isAlive ? 'alive' : 'dead');
+
+            // Append the status bulb and container name
+            containerLink.appendChild(statusBulb);
+            containerLink.appendChild(document.createTextNode(item.shortName));
+
+            // Click event to update the selected container
+            containerLink.addEventListener('click', async function(event) {
+                event.preventDefault();
+                // Remove the selected-container class from any other container
+                const selected = document.querySelector('a.container.selected');
+                if (selected) {
+                    selected.classList.remove('selected');
+                }
+
+                // Add the selected-container class to the clicked container
+                containerLink.classList.add('selected');
+
+                await setCurrentContainer(event.target.getAttribute('data-itemId'));
+            });
+
+            contRoot.appendChild(containerLink);
+        });
+    }
+
+    async function updateContainers () {
+        document.getElementById('updateContainers').disabled = true;
+        try {
+            const resp = await fetch('/api/container', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            const respJson = await resp.json();
+
+            if (resp.status <= 299) {
+                console.log('success get containers');
+                renderContainers(respJson.containers);
+            } else {
+                const errorMessage = respJson.message || 'Something went wrong';
+                console.log(errorMessage);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+        document.getElementById('updateContainers').disabled = false;
+    }
+
+    const appendValues = { NONE: 'none', UP: 'up', DOWN: 'down' };
+
+    function renderLogs (logs, append, messageForEmpty) {
+        const logsRoot = document.getElementById('logsRoot');
+
+        console.log(`rendering logs, length ${logs.length}, append ${append}`)
+
+        switch (append) {
+            case appendValues.NONE:
+                if (!logs || logs.length === 0) {
+                    logsRoot.innerHTML = messageForEmpty;
+                } else {
+                    logsRoot.innerHTML = logs.join('<br>');
+                }
+                break;
+            case appendValues.DOWN:
+                if (logs.length > 0) {
+                    logsRoot.innerHTML += '<br>' + logs.join('<br>');
+                }
+                break;
+            case appendValues.UP:
+                if (logs.length > 0) {
+                    logsRoot.innerHTML = logs.join('<br>') + '<br>' + logsRoot.innerHTML;
+                }
+                break;
+            default:
+                console.error(`unknown append: ${append}`)
+        }
+    }
+
+    async function getLogs (dir, cursor) {
+        try {
+            const resp = await fetch(`/api/container/${currentContainer}/log?direction=${dir}&cursor=${cursor}&limit=${limit}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            const respJson = await resp.json();
+
+            if (resp.status <= 299) {
+                console.log(`got logs for container ${currentContainer} cursor ${cursor}`);
+
+                return respJson;
+            } else {
+                const errorMessage = respJson.message || 'Something went wrong';
+                console.log(errorMessage);
+                return {logs:[], chunkNumber:0, offset:0}
+            }
+        } catch (err) {
+            console.log(err);
+        }
+        return {logs:[], chunkNumber:0, offset:0};
+    }
+
+    async function search (contains) {
+        try {
+            const resp = await fetch(`/api/container/${currentContainer}/log/search?contains=${contains}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            const respJson = await resp.json();
+
+            if (resp.status <= 299) {
+                console.log('success search');
+                renderLogs(respJson.records, appendValues.NONE, 'Not found');
+            } else {
+                const errorMessage = respJson.message || 'Something went wrong';
+                console.log(errorMessage);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    async function updateLogs () {
+        const updLogsBtn = document.getElementById('updateLogsButton');
+        updLogsBtn.disabled = true;
+
+        const resp = await getLogs('future', lastLogID);
+        if (resp.records.length === 0) {
+            updLogsBtn.disabled = false;
+            return
+        }
+
+        lastLogID = resp.lastCursor;
+
+        renderLogs(resp.records, appendValues.UP, '');
+
+        updLogsBtn.disabled = false;
+    }
+
+    async function nextLogs () {
+        const nextLogsButton = document.getElementById('nextLogsButton');
+        console.log('next logs');
+
+        const resp = await getLogs('past', firstLogID);
+        if (resp.records.length === 0) {
+            nextLogsButton.disabled = false;
+            return
+        }
+
+        firstLogID = resp.firstCursor;
+
+        renderLogs(resp.records, appendValues.DOWN, '');
+
+        nextLogsButton.disabled = false;
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const logoutLink = document.getElementById('logoutLink');
+
+        logoutLink.addEventListener('click', function () {
+            logout();
+        });
+
+        const searchInput = document.getElementById('searchInput');
+        const findButton = document.getElementById('findButton');
+        const searchForm = document.getElementById('searchForm');
+
+        const updContainersBtn = document.getElementById('updateContainers');
+        const updLogsBtn = document.getElementById('updateLogsButton');
+        const nextLogsButton = document.getElementById('nextLogsButton');
+
+        async function searchListener (event) {
+            event.preventDefault();
+            console.log('search');
+
+            if (!currentContainer) {
+                return
+            }
+
+            findButton.disabled = true;
+
+            const searchText = searchInput.value;
+            if (!searchText) {
+                findButton.disabled = false;
+                return
+            }
+
+            await search(searchText);
+
+            findButton.disabled = false;
+        }
+
+        searchForm.addEventListener('submit', searchListener);
+        findButton.addEventListener('click', searchListener);
+
+        updContainersBtn.addEventListener('click', updateContainers);
+
+        updLogsBtn.addEventListener('click', updateLogs);
+
+        nextLogsButton.addEventListener('click', nextLogs)
+
+        await updateContainers();
+
+        setInterval(updateContainers, 10000);
+    });
+</script>
+
+</body>
+
+</html>

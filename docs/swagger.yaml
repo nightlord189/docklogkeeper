@@ -1,0 +1,182 @@
+definitions:
+  entity.ContainerInfo:
+    properties:
+      isAlive:
+        type: boolean
+      shortName:
+        type: string
+    type: object
+  handler.AuthRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  handler.GenericResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+    type: object
+  handler.GetContainersResponse:
+    properties:
+      containers:
+        items:
+          $ref: '#/definitions/entity.ContainerInfo'
+        type: array
+    type: object
+  handler.SearchLogsResponse:
+    properties:
+      records:
+        items:
+          type: string
+        type: array
+    type: object
+  log.GetLogsResponse:
+    properties:
+      firstCursor:
+        type: integer
+      lastCursor:
+        type: integer
+      records:
+        items:
+          type: string
+        type: array
+    type: object
+info:
+  contact: {}
+paths:
+  /api/auth:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Input model
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - auth
+  /api/container:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GetContainersResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - container
+  /api/container/{shortname}/log:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: container's short name
+        in: path
+        name: shortname
+        required: true
+        type: string
+      - description: future or past
+        in: query
+        name: direction
+        required: true
+        type: string
+      - description: cursor
+        in: query
+        name: cursor
+        type: integer
+      - description: limit of result lines
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/log.GetLogsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - log
+  /api/container/{shortname}/log/search:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: container's short name
+        in: path
+        name: shortname
+        required: true
+        type: string
+      - description: contains substring
+        in: query
+        name: contains
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.SearchLogsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - log
+swagger: "2.0"

@@ -2,31 +2,41 @@ package handler
 
 import (
 	"fmt"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/nightlord189/docklogkeeper/internal/config"
-	docker2 "github.com/nightlord189/docklogkeeper/internal/docker"
+	"github.com/nightlord189/docklogkeeper/internal/log"
+	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	"io"
+	"net/http"
 	"time"
+
+	_ "github.com/nightlord189/docklogkeeper/docs"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Handler struct {
-	Config config.HTTPConfig
-	Docker *docker2.Adapter
+	Config     config.Config
+	Usecase    *usecase.Usecase
+	LogAdapter *log.Adapter
 }
 
-func New(cfg config.HTTPConfig, dock *docker2.Adapter) *Handler {
-	return &Handler{Config: cfg, Docker: dock}
+func New(cfg config.Config, ucInst *usecase.Usecase, lgAdapter *log.Adapter) *Handler {
+	return &Handler{Config: cfg, Usecase: ucInst, LogAdapter: lgAdapter}
 }
 
 func (h *Handler) Run() error {
-	gin.SetMode(h.Config.GinMode)
+	gin.SetMode(h.Config.HTTP.GinMode)
 	router := gin.New()
 	router.Use(gin.Recovery())
 	ginLoggerConfig := gin.LoggerConfig{}
 
-	if h.Config.GinMode == "release" {
+	if h.Config.HTTP.GinMode == "release" {
 		ginLoggerConfig.Output = io.Discard
 	}
 
@@ -36,9 +46,9 @@ func (h *Handler) Run() error {
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{
 			"Origin", "Access-Control-Allow-Origin", "Content-Type", "Content-Length",
-			"Accept-Encoding", "Authorization", "X-CSRF-Token", "X-Request-ID", "X-Forwarded-For", "Origin", "Referer",
+			"Accept-Encoding", "Authorization", "X-CSRF-Token", "X-Request-FolderName", "X-Forwarded-For", "Origin", "Referer",
 		},
-		ExposeHeaders:    []string{"Content-Length", "Content-Range", "X-Request-ID", "X-Forwarded-For", "Origin", "Referer"},
+		ExposeHeaders:    []string{"Content-Length", "Content-Range", "X-Request-FolderName", "X-Forwarded-For", "Origin", "Referer"},
 		AllowCredentials: true,
 		AllowAllOrigins:  true,
 		MaxAge:           12 * time.Hour,
@@ -46,8 +56,46 @@ func (h *Handler) Run() error {
 
 	router.Use(corsMiddleware)
 
+	store := cookie.NewStore([]byte(h.Config.Auth.Secret))
+	store.Options(sessions.Options{
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   7 * 86400,
+		Secure:   false,
+		HttpOnly: false,
+		SameSite: 0,
+	})
+
+	router.Use(sessions.Sessions(sessionName, store))
+
+	router.GET("/swagger/*any", func(context *gin.Context) {
+		ginSwagger.WrapHandler(swaggerFiles.Handler)(context)
+	})
+
 	router.OPTIONS("/", func(c *gin.Context) {
 		c.AbortWithStatus(204)
 	})
-	return router.Run(fmt.Sprintf(":%d", h.Config.Port))
+
+	router.POST("/api/auth", h.Auth)
+	router.GET("/api/container", h.CookieAuthMdw, h.GetContainers)
+	router.GET("/api/container/:shortname/log", h.CookieAuthMdw, h.GetLogs)
+	router.GET("/api/container/:shortname/log/search", h.CookieAuthMdw, h.SearchLogs)
+
+	htmlPages := []string{
+		"static/web/auth.html",
+		"static/web/logs.html",
+	}
+	router.LoadHTMLFiles(htmlPages...)
+
+	router.Static("/js", "static/web/js")
+
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "auth.html", gin.H{})
+	})
+
+	router.GET("/logs", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "logs.html", gin.H{})
+	})
+
+	return router.Run(fmt.Sprintf(":%d", h.Config.HTTP.Port))
 }

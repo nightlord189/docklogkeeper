@@ -6,9 +6,13 @@ import (
 	"github.com/nightlord189/docklogkeeper/internal/config"
 	docker2 "github.com/nightlord189/docklogkeeper/internal/docker"
 	"github.com/nightlord189/docklogkeeper/internal/handler"
-	"github.com/nightlord189/docklogkeeper/pkg/log"
+	"github.com/nightlord189/docklogkeeper/internal/log"
+	"github.com/nightlord189/docklogkeeper/internal/repo"
+	"github.com/nightlord189/docklogkeeper/internal/usecase"
+	pkgLog "github.com/nightlord189/docklogkeeper/pkg/log"
 	"github.com/rs/zerolog"
 	stdLog "log"
+	"time"
 )
 
 func main() {
@@ -19,21 +23,54 @@ func main() {
 		stdLog.Fatalf("error on load config: %v", err)
 	}
 
-	if err := log.InitLogger(cfg.LogLevel); err != nil {
-		stdLog.Fatalf("error on init logger: %v", err)
+	if err := pkgLog.InitLogger(cfg.LogLevel); err != nil {
+		stdLog.Fatalf("error on init log: %v", err)
 	}
 
 	ctx := context.Background()
 
 	zerolog.Ctx(ctx).Debug().Msg("start #2")
 
-	dock := docker2.New(cfg)
+	repoInst, err := repo.New(cfg.DB)
+	if err != nil {
+		stdLog.Fatalf("error init repo: %v", err)
+	}
 
-	fmt.Println("containers", dock.GetContainers())
+	logAdapter := log.New(cfg.Log, repoInst)
 
-	handlerInst := handler.New(cfg.HTTP, dock)
+	dock, err := docker2.New(ctx, cfg, logAdapter)
+	if err != nil {
+		stdLog.Fatalf("error on init docker: %v", err)
+	}
+
+	defer dock.Close()
+
+	go dock.Run(ctx)
+
+	usecaseInst := usecase.New(dock, logAdapter)
+
+	handlerInst := handler.New(cfg, usecaseInst, logAdapter)
+
+	go func() {
+		ticker := time.NewTicker(10 * time.Minute)
+		logAdapter.ClearOldFiles(ctx)
+		for range ticker.C {
+			logAdapter.ClearOldFiles(ctx)
+		}
+	}()
+
+	go func() {
+		ticker := time.NewTicker(30 * time.Minute)
+		for range ticker.C {
+			if err := repoInst.DeleteContainersWithoutLogs(); err != nil {
+				zerolog.Ctx(ctx).Err(err).Msg("delete containers without logs error")
+			}
+		}
+	}()
 
 	if err := handlerInst.Run(); err != nil {
 		stdLog.Fatalf("run router error: %v", err)
 	}
+
+	// TODO: regular update of logs
 }
