@@ -121,6 +121,7 @@
     const limit = 100;
 
     let currentContainer = '';
+    let currentContainers = [];
 
     let lastLogID = 0; // for next
     let firstLogID = 0; // for past
@@ -149,6 +150,15 @@
     };
 
     function renderContainers(containers) {
+        if (arraysOfObjectsAreEqual(currentContainers, containers)) {
+            console.log(`containers didn't change`)
+            return
+        }
+
+        console.log(`rendering containers`);
+
+        currentContainers = containers;
+
         const contRoot = document.getElementById('containersRoot');
 
         // 1. Remove all children of containersRoot
@@ -371,6 +381,8 @@
         nextLogsButton.addEventListener('click', nextLogs)
 
         await updateContainers();
+
+        setInterval(updateContainers, 10000);
     });
 </script>
 
