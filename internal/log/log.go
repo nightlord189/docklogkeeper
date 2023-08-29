@@ -39,7 +39,7 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 		if len(readBytes) < 8 {
 			continue
 		}
-		ttFromLog := getTimestampFromLog(string(readBytes[8:]))
+		ttFromLog := getTimestampFromLog(ctx, string(readBytes[8:]))
 		if !foundNewLogs && timeGreaterOrEqualNil(lastTimestamp, ttFromLog) { // check also for equal
 			//log.Ctx(ctx).Debug().Msgf("skipping line because timestamp, last_tt: %v, current_tt: %v", lastTimestamp, ttFromLog)
 			continue
@@ -53,7 +53,7 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 		} else {
 			createdAt = time.Now()
 		}
-		
+
 		logs = append(logs, entity.LogDataDB{
 			ContainerName: shortName,
 			LogText:       string(readBytes[8:]),
@@ -74,7 +74,7 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 
 	//fmt.Printf("lines count: %d, lastLine: %s\n", len(logs), logs[len(logs)-1].LogText)
 
-	timestampFromLog := getTimestampFromLog(logs[len(logs)-1].LogText)
+	timestampFromLog := getTimestampFromLog(ctx, logs[len(logs)-1].LogText)
 	if timestampFromLog != nil {
 		a.lastTimestamps[shortName] = timestampFromLog
 		//fmt.Println(containerName, "last timestamp", timestampFromLog)
