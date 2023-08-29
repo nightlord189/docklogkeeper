@@ -300,6 +300,10 @@
     }
 
     async function updateLogs () {
+        if (currentContainer === '') {
+            return
+        }
+
         const updLogsBtn = document.getElementById('updateLogsButton');
         updLogsBtn.disabled = true;
 
@@ -381,6 +385,8 @@
         await updateContainers();
 
         setInterval(updateContainers, 10000);
+
+        setInterval(updateLogs, 5000);
     });
 </script>
 
