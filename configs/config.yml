@@ -13,5 +13,5 @@ log:
   retention: 604800 #1 week in seconds
 
 db:
-  db_file: ./logs.db
+  db_file: ./logs/logs.db
   log: false

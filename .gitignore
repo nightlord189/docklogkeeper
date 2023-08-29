@@ -39,4 +39,6 @@ node_modules/
 # for caprover deploy
 deploy.tar
 
-logs.db
+logs
+
+logs/logs.db

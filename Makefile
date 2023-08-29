@@ -1,3 +1,11 @@
+build-docker:
+	docker build --no-cache -t "docklogkeeper:latest" .
+
+run-docker:
+	docker stop docklogkeeper || true
+	docker rm docklogkeeper || true
+	docker run --name docklogkeeper -d -v /var/run/docker.sock:/var/run/docker.sock -v docklogkeeper:/logs -p 3010:3010 docklogkeeper:latest
+
 buildg:
 	docker build --no-cache -t "bibgen:latest" ./test/bibgen
 

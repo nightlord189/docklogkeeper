@@ -1,6 +1,4 @@
-FROM golang:1.20-alpine3.18 AS builder
-
-RUN apk add git
+FROM golang:1.21-alpine3.18 AS builder
 
 WORKDIR /build
 
@@ -21,6 +19,6 @@ COPY --from=builder /build/cmd/app/main /
 COPY --from=builder /build/configs /configs
 COPY --from=builder /build/static /static
 
-EXPOSE 8080
+EXPOSE 3010
 
 ENTRYPOINT ["/main"]

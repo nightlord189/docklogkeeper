@@ -3,11 +3,13 @@ package repo
 import (
 	"database/sql"
 	"fmt"
+	"github.com/glebarez/sqlite"
 	"github.com/nightlord189/docklogkeeper/internal/config"
 	"github.com/pressly/goose/v3"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"log"
+	"os"
 )
 
 type Repo struct {
@@ -15,6 +17,18 @@ type Repo struct {
 }
 
 func New(cfg config.DBConfig) (*Repo, error) {
+	path, err := os.Getwd()
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println("current directory", path)
+
+	path, err = os.Executable()
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println("current executable", path)
+
 	dbLogger := logger.Default.LogMode(logger.Info)
 	if !cfg.Log {
 		dbLogger = logger.Discard

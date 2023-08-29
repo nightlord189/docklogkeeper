@@ -102,9 +102,7 @@
 
             <!-- Scrollable window for logs -->
             <div id="logsRoot" class="log-window">
-                <!-- Sample log entries, can be replaced with dynamic content -->
-                Log entry 1<br> Log entry 2<br> Log entry 3<br>
-                <!-- ... -->
+                Select container to see logs<br>
             </div>
             <button id="nextLogsButton" class="btn btn-primary mt-2">Next</button>
         </div>
@@ -246,7 +244,7 @@
                 break;
             case appendValues.UP:
                 if (logs.length > 0) {
-                    logsRoot.innerHTML = logs.join('<br>') + logsRoot.innerHTML;
+                    logsRoot.innerHTML = logs.join('<br>') + '<br>' + logsRoot.innerHTML;
                 }
                 break;
             default:
