@@ -1,18 +1,9 @@
 package log
 
 import (
-	"strconv"
 	"strings"
 	"time"
 )
-
-func getChunkNumberFromFileName(fileName string) int {
-	parsedChunkNumber, err := strconv.Atoi(strings.TrimSuffix(fileName, ".txt"))
-	if err != nil {
-		return -1
-	}
-	return parsedChunkNumber
-}
 
 func reverseLines(lines []string) {
 	for i, j := 0, len(lines)-1; i < j; i, j = i+1, j-1 {

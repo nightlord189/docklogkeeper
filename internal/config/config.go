@@ -11,6 +11,12 @@ type Config struct {
 	Auth     AuthConfig `yaml:"auth"`
 	HTTP     HTTPConfig `yaml:"http"`
 	Log      LogConfig  `yaml:"log"`
+	DB       DBConfig   `yaml:"db"`
+}
+
+type DBConfig struct {
+	DBFile string `yaml:"db_file" env:"DB_FILE"`
+	Log    bool   `yaml:"log" env:"DB_LOG"`
 }
 
 type AuthConfig struct {
@@ -24,9 +30,8 @@ type HTTPConfig struct {
 }
 
 type LogConfig struct {
-	UpdateFrequency int    `yaml:"update_frequency" env:"UPDATE_FREQUENCY"`
-	DB              string `yaml:"db" env:"LOG_DB"`
-	Retention       int64  `yaml:"retention" env:"LOG_RETENTION"`
+	UpdateFrequency int   `yaml:"update_frequency" env:"UPDATE_FREQUENCY"`
+	Retention       int64 `yaml:"retention" env:"LOG_RETENTION"`
 }
 
 func LoadConfig(configFilePath string) (Config, error) {

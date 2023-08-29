@@ -5,7 +5,7 @@ import (
 )
 
 func (a *Adapter) GetLogs(req entity.GetLogsRequest) (GetLogsResponse, error) {
-	logs, err := a.getLogs(req.ShortName, req.Direction == entity.DirFuture, req.Cursor, req.Limit)
+	logs, err := a.Repo.GetLogs(req.ShortName, req.Direction == entity.DirFuture, req.Cursor, req.Limit)
 	if err != nil {
 		return GetLogsResponse{}, err
 	}

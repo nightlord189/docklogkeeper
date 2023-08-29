@@ -5,5 +5,5 @@ import (
 )
 
 func (a *Adapter) GetAllContainers(ctx context.Context) ([]string, error) {
-	return a.getContainers()
+	return a.Repo.GetContainers()
 }

@@ -11,6 +11,9 @@ auth:
 
 log:
   update_frequency: 5
-  db: ./logs.db
   retention: 604800 #1 week in seconds
   chunk_size: 1048576 #1 MB in bytes
+
+db:
+  db_file: ./logs.db
+  log: false

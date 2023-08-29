@@ -7,6 +7,7 @@ import (
 	docker2 "github.com/nightlord189/docklogkeeper/internal/docker"
 	"github.com/nightlord189/docklogkeeper/internal/handler"
 	"github.com/nightlord189/docklogkeeper/internal/log"
+	"github.com/nightlord189/docklogkeeper/internal/repo"
 	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	pkgLog "github.com/nightlord189/docklogkeeper/pkg/log"
 	"github.com/rs/zerolog"
@@ -30,10 +31,12 @@ func main() {
 
 	zerolog.Ctx(ctx).Debug().Msg("start #2")
 
-	logAdapter, err := log.New(cfg.Log)
+	repoInst, err := repo.New(cfg.DB)
 	if err != nil {
-		stdLog.Fatalf("error init log adapter: %v", err)
+		stdLog.Fatalf("error init repo: %v", err)
 	}
+
+	logAdapter := log.New(cfg.Log, repoInst)
 
 	dock, err := docker2.New(ctx, cfg, logAdapter)
 	if err != nil {
@@ -48,16 +51,6 @@ func main() {
 
 	handlerInst := handler.New(cfg, usecaseInst, logAdapter)
 
-	/*go func() {
-		time.Sleep(5 * time.Second)
-		fmt.Println("delayed test func")
-
-		req := log.SearchRequest{Contains: "gin"}
-
-		lines, err := logAdapter.SearchLines(ctx, "remindmenow", req)
-		fmt.Printf("search %s: found %d lines, err %v\n", req.Contains, len(lines), err)
-	}()*/
-
 	go func() {
 		ticker := time.NewTicker(10 * time.Minute)
 		logAdapter.ClearOldFiles(ctx)
@@ -69,7 +62,7 @@ func main() {
 	go func() {
 		ticker := time.NewTicker(30 * time.Minute)
 		for range ticker.C {
-			if err := logAdapter.DeleteContainersWithoutLogs(); err != nil {
+			if err := repoInst.DeleteContainersWithoutLogs(); err != nil {
 				zerolog.Ctx(ctx).Err(err).Msg("delete containers without logs error")
 			}
 		}
@@ -78,6 +71,6 @@ func main() {
 	if err := handlerInst.Run(); err != nil {
 		stdLog.Fatalf("run router error: %v", err)
 	}
-	
+
 	// TODO: regular update of logs
 }

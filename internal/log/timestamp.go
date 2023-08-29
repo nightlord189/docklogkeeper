@@ -11,7 +11,7 @@ func (a *Adapter) GetSinceTimestamp(ctx context.Context, containerName string) s
 	since := a.lastTimestamps[shortName]
 	if since == nil {
 		ctx = log.Ctx(ctx).With().Str("short_name", shortName).Logger().WithContext(ctx)
-		since = a.getLastTimestampFromDB(shortName)
+		since = a.Repo.GetLastTimestamp(shortName)
 		if since == nil {
 			newSince := time.Now().Add(-5 * time.Minute)
 			since = &newSince

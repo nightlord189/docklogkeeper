@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"github.com/rs/zerolog/log"
 	"io"
 )
@@ -24,7 +25,7 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 	lastTimestamp := a.lastTimestamps[shortName]
 	foundNewLogs := false
 
-	logs := make([]logDataDB, 0, 10)
+	logs := make([]entity.LogDataDB, 0, 10)
 
 	for {
 		readBytes, err := buf.ReadBytes('\n')
@@ -44,7 +45,7 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 		} else {
 			foundNewLogs = true
 		}
-		logs = append(logs, logDataDB{
+		logs = append(logs, entity.LogDataDB{
 			ContainerName: shortName,
 			LogText:       string(readBytes[8:]),
 			CreatedAt:     ttFromLog.Unix(),
@@ -55,10 +56,10 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 		return
 	}
 
-	if err := a.ensureContainer(shortName); err != nil {
+	if err := a.Repo.EnsureContainer(shortName); err != nil {
 		log.Ctx(ctx).Err(err).Msg("ensure container error")
 	}
-	if err := a.insertLogs(logs); err != nil {
+	if err := a.Repo.InsertLogs(logs); err != nil {
 		log.Ctx(ctx).Err(err).Msg("insert logs error")
 	}
 
@@ -74,10 +75,10 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 func (a *Adapter) GetShortContainerName(containerName string) string {
 	result := a.names[containerName]
 	if result == "" {
-		result = a.getMappedName(containerName)
+		result = a.Repo.GetMappedName(containerName)
 		if result == "" {
 			result = calcShortContainerName(containerName)
-			a.setMappedName(containerName, result)
+			a.Repo.SetMappedName(containerName, result)
 		}
 		a.names[containerName] = result
 	}

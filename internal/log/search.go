@@ -6,7 +6,7 @@ import (
 )
 
 func (a *Adapter) SearchLines(ctx context.Context, shortName string, req SearchRequest) []string {
-	logs, err := a.searchLogs(shortName, req.Contains)
+	logs, err := a.Repo.SearchLogs(shortName, req.Contains)
 	if err != nil {
 		log.Ctx(ctx).Err(err).Msg("search logs error")
 		return []string{}
