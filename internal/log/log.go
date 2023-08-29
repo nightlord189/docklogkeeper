@@ -7,6 +7,7 @@ import (
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"github.com/rs/zerolog/log"
 	"io"
+	"time"
 )
 
 const defaultFileName = "1.txt"
@@ -45,10 +46,18 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 		} else {
 			foundNewLogs = true
 		}
+
+		var createdAt time.Time
+		if ttFromLog != nil {
+			createdAt = *ttFromLog
+		} else {
+			createdAt = time.Now()
+		}
+		
 		logs = append(logs, entity.LogDataDB{
 			ContainerName: shortName,
 			LogText:       string(readBytes[8:]),
-			CreatedAt:     ttFromLog.Unix(),
+			CreatedAt:     createdAt.Unix(),
 		})
 	}
 
