@@ -1,5 +1,7 @@
 **/test/
 
+**/site/
+
 logs/logs.db
 
 logs.db
