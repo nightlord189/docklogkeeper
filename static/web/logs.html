@@ -65,6 +65,16 @@
             background-color: yellow;
             font-weight: bold;
         }
+
+        #autoRefreshCheckbox, label[for="autoRefreshCheckbox"] {
+            vertical-align: middle; /* Aligns them vertically in the middle */
+            margin-bottom: 0;
+            margin-left: 10px;
+        }
+
+        .autorefresh-label {
+            margin-left: 20px;
+        }
     </style>
 </head>
 
@@ -110,6 +120,9 @@
                 Select container to see logs<br>
             </div>
             <button id="nextLogsButton" class="btn btn-primary mt-2">Next</button>
+
+            <label for="autoRefreshCheckbox" class="autorefresh-label">Auto refresh</label>
+            <input type="checkbox" id="autoRefreshCheckbox" checked>
         </div>
     </div>
 </div>
@@ -129,7 +142,7 @@
     let lastLogID = 0; // for next
     let firstLogID = 0; // for past
 
-    let isSearching = false;
+    let updateLogsInterval;
 
     async function setCurrentContainer (newVal) {
         if (newVal === currentContainer) {
@@ -138,7 +151,6 @@
         currentContainer = newVal;
         lastLogID = 0;
         firstLogID = 0;
-        isSearching = false;
         renderLogs([], appendValues.NONE, 'Loading...');
 
         const resp = await getLogs('future', 0);
@@ -146,6 +158,8 @@
         firstLogID = resp.firstCursor;
         lastLogID = resp.lastCursor;
         renderLogs(resp.records, appendValues.NONE, 'There is no logs');
+
+        startLogsUpdate();
     }
 
     window.onload = function() {
@@ -316,7 +330,6 @@
     }
 
     async function search (contains) {
-        isSearching = true;
         try {
             const resp = await fetch(`/api/container/${currentContainer}/log/search?contains=${contains}`, {
                 method: 'GET',
@@ -338,13 +351,9 @@
         }
     }
 
-    async function updateLogs (force) {
-        if (currentContainer === '' || (isSearching && !force)) {
+    async function updateLogs () {
+        if (currentContainer === '') {
             return
-        }
-
-        if (force) {
-            isSearching = false;
         }
 
         const updLogsBtn = document.getElementById('updateLogsButton');
@@ -380,6 +389,25 @@
         nextLogsButton.disabled = false;
     }
 
+    function startLogsUpdate () {
+        console.log('startLogsUpdate');
+        if (!updateLogsInterval) {
+            updateLogsInterval = setInterval(updateLogs, 5000);
+        }
+        document.getElementById('autoRefreshCheckbox').checked = updateLogsInterval !== null;
+        console.log(`checkbox checked: ${updateLogsInterval !== null}`);
+    }
+
+    function stopLogsUpdate () {
+        console.log('stopLogsUpdate');
+        if (updateLogsInterval) {
+            clearInterval(updateLogsInterval);
+            updateLogsInterval = null;
+        }
+        document.getElementById('autoRefreshCheckbox').checked = updateLogsInterval !== null;
+        console.log(`checkbox checked: ${updateLogsInterval !== null}`);
+    }
+
     document.addEventListener('DOMContentLoaded', async function() {
         const logoutLink = document.getElementById('logoutLink');
 
@@ -411,6 +439,7 @@
                 return
             }
 
+            stopLogsUpdate();
             await search(searchText);
 
             findButton.disabled = false;
@@ -421,9 +450,7 @@
 
         updContainersBtn.addEventListener('click', updateContainers);
 
-        updLogsBtn.addEventListener('click', async function () {
-            await updateLogs(true);
-        });
+        updLogsBtn.addEventListener('click', updateLogs);
 
         nextLogsButton.addEventListener('click', nextLogs)
 
@@ -431,7 +458,17 @@
 
         setInterval(updateContainers, 10000);
 
-        setInterval(updateLogs, 5000);
+        startLogsUpdate();
+
+        document.getElementById('autoRefreshCheckbox').addEventListener('change', function(event) {
+            console.log('change checkmark');
+
+            if (event.target.checked) {
+                startLogsUpdate();
+            } else {
+                stopLogsUpdate();
+            }
+        });
     });
 </script>
 

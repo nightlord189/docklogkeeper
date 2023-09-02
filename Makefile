@@ -1,4 +1,8 @@
-publish:
+publish-latest:
+	docker build --no-cache -t "nightlord189/docklogkeeper:latest" .
+	docker push "nightlord189/docklogkeeper:latest"
+
+publish-version:
 	docker build --no-cache -t "nightlord189/docklogkeeper:$(version)" .
 	docker push "nightlord189/docklogkeeper:$(version)"
 
