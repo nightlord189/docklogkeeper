@@ -29,7 +29,7 @@ When DockLogKeeper could be right choice for you?
 4. Choose a container from those running on your host to view its logs.
 5. Use "Update" button to get new logs instantly and "Next" to get older logs when you are scrolling to end.
 
-## Docker-Compose
+### Docker-Compose
 ```
 version: "3"
 services:
@@ -45,6 +45,12 @@ services:
 volumes:
   docklogkeeper:
 ```
+
+### [CapRover](https://caprover.com):
+To deploy DockLogKeeper as one-click app add following public repo to your CapRover:  
+```https://caprover-one-click-apps.nightlord189.vercel.app```
+
+Source code of this repo is [here](https://github.com/nightlord189/caprover-one-click-apps).
 
 ## Configuration
 You can use following environment variables:
@@ -65,4 +71,3 @@ Yes. It's open source and free project. You should run it on your own server.
 + Get realtime log updates via websocket.
 + Search logs by regexp.
 + Automatic past logs loading on scrolling.
-+ Integration as a one-click-app for [CapRover](https://caprover.com/).
