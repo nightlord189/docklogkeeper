@@ -29,6 +29,23 @@ When DockLogKeeper could be right choice for you?
 4. Choose a container from those running on your host to view its logs.
 5. Use "Update" button to get new logs instantly and "Next" to get older logs when you are scrolling to end.
 
+## Docker-Compose
+```
+version: "3"
+services:
+  docklogkeeper:
+    container_name: docklogkeeper
+    image: nightlord189/docklogkeeper:1.0.1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - docklogkeeper:/logs
+    ports:
+      - 3010:3010
+
+volumes:
+  docklogkeeper:
+```
+
 ## Configuration
 You can use following environment variables:
 + PASSWORD - admin password. Default is keeper43.
