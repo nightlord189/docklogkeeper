@@ -22,7 +22,7 @@ When DockLogKeeper could be right choice for you?
 ## How to use?
 1. Run command below:
     ```
-    docker run --name docklogkeeper --env PASSWORD=YOUR_PASSWORD -d -v /var/run/docker.sock:/var/run/docker.sock -v docklogkeeper:/logs -p 3010:3010 nightlord189/docklogkeeper:latest
+    docker run --name docklogkeeper --env PASSWORD=YOUR_PASSWORD -d -v /var/run/docker.sock:/var/run/docker.sock -v docklogkeeper:/logs -p 3010:3010 nightlord189/docklogkeeper:1.0.1
     ```
 2. Navigate to http://localhost:3010. Authenticate using the username **admin** and the password specified in step 1.
 3. Explore and search your logs via an user-friendly interface.
@@ -41,12 +41,11 @@ You can use following environment variables:
 ## FAQ
 1. Is it free?
 Yes. It's open source and free project. You should run it on your own server.
-2. Does DockLogKeeper send analytics or other data to 3rd parties? However, future releases may incorporate anonymous analytics. Rest assured, DockLogKeeper will never transmit your container data or logs.
+2. Does DockLogKeeper send analytics or other data to 3rd parties? Not. However, future releases may incorporate anonymous analytics. Rest assured, DockLogKeeper will never transmit your container data or logs.
 3. Is it well tested? Currently, DockLogKeeper is in its alpha stage. Comprehensive testing is on our roadmap.
 
 ## Enhancement
 + Get realtime log updates via websocket.
-+ Search logs by regexp
-+ Highlight <contains> value in search results
++ Search logs by regexp.
 + Automatic past logs loading on scrolling.
-+ Integration as a one-click-app for [CapRover](https://caprover.com/)
++ Integration as a one-click-app for [CapRover](https://caprover.com/).

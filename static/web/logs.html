@@ -60,6 +60,11 @@
             background-color: #e0e0e0;   /* Light grey background */
             border-radius: 4px;          /* Rounded corners */
         }
+
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -116,13 +121,15 @@
 
 <script src="/js/main.js"></script>
 <script>
-    const limit = 100;
+    const limit = 1000;
 
     let currentContainer = '';
     let currentContainers = [];
 
     let lastLogID = 0; // for next
     let firstLogID = 0; // for past
+
+    let isSearching = false;
 
     async function setCurrentContainer (newVal) {
         if (newVal === currentContainer) {
@@ -131,6 +138,7 @@
         currentContainer = newVal;
         lastLogID = 0;
         firstLogID = 0;
+        isSearching = false;
         renderLogs([], appendValues.NONE, 'Loading...');
 
         const resp = await getLogs('future', 0);
@@ -224,10 +232,21 @@
 
     const appendValues = { NONE: 'none', UP: 'up', DOWN: 'down' };
 
-    function renderLogs (logs, append, messageForEmpty) {
+    function renderLogs(logs, append, messageForEmpty, highlightTerm = '') {
         const logsRoot = document.getElementById('logsRoot');
 
-        console.log(`rendering logs, length ${logs.length}, append ${append}`)
+        console.log(`rendering logs, length ${logs.length}, append ${append}`);
+
+        // Store current scroll position
+        const initialScrollTop = logsRoot.scrollTop;
+
+        // Check if the current scroll position is at the top
+        const isAtTop = initialScrollTop === 0;
+
+        if (highlightTerm) {
+            const regex = new RegExp(highlightTerm, 'gi');
+            logs = logs.map(log => log.replace(regex, match => `<span class="highlight">${match}</span>`));
+        }
 
         switch (append) {
             case appendValues.NONE:
@@ -244,13 +263,32 @@
                 break;
             case appendValues.UP:
                 if (logs.length > 0) {
+                    // Create a dummy div to measure the height of the new content
+                    const dummyDiv = document.createElement('div');
+                    dummyDiv.innerHTML = logs.join('<br>') + '<br>';
+                    document.body.appendChild(dummyDiv);
+                    const addedHeight = dummyDiv.getBoundingClientRect().height;
+                    document.body.removeChild(dummyDiv);
+
                     logsRoot.innerHTML = logs.join('<br>') + '<br>' + logsRoot.innerHTML;
+
+                    if (!isAtTop) {
+                        // Adjust the scroll position by the height of the newly added content
+                        logsRoot.scrollTop = initialScrollTop + addedHeight;
+                    }
+                    // If scroll position was at the top, it will remain at the top naturally
                 }
                 break;
             default:
-                console.error(`unknown append: ${append}`)
+                console.error(`unknown append: ${append}`);
+        }
+
+        if (append !== appendValues.UP) {
+            // Restore the original scroll position
+            logsRoot.scrollTop = initialScrollTop;
         }
     }
+
 
     async function getLogs (dir, cursor) {
         try {
@@ -278,6 +316,7 @@
     }
 
     async function search (contains) {
+        isSearching = true;
         try {
             const resp = await fetch(`/api/container/${currentContainer}/log/search?contains=${contains}`, {
                 method: 'GET',
@@ -289,7 +328,7 @@
 
             if (resp.status <= 299) {
                 console.log('success search');
-                renderLogs(respJson.records, appendValues.NONE, 'Not found');
+                renderLogs(respJson.records, appendValues.NONE, 'Not found', contains);
             } else {
                 const errorMessage = respJson.message || 'Something went wrong';
                 console.log(errorMessage);
@@ -299,9 +338,13 @@
         }
     }
 
-    async function updateLogs () {
-        if (currentContainer === '') {
+    async function updateLogs (force) {
+        if (currentContainer === '' || (isSearching && !force)) {
             return
+        }
+
+        if (force) {
+            isSearching = false;
         }
 
         const updLogsBtn = document.getElementById('updateLogsButton');
@@ -378,7 +421,9 @@
 
         updContainersBtn.addEventListener('click', updateContainers);
 
-        updLogsBtn.addEventListener('click', updateLogs);
+        updLogsBtn.addEventListener('click', async function () {
+            await updateLogs(true);
+        });
 
         nextLogsButton.addEventListener('click', nextLogs)
 
