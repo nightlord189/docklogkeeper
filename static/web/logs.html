@@ -60,6 +60,11 @@
             background-color: #e0e0e0;   /* Light grey background */
             border-radius: 4px;          /* Rounded corners */
         }
+
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -227,7 +232,7 @@
 
     const appendValues = { NONE: 'none', UP: 'up', DOWN: 'down' };
 
-    function renderLogs(logs, append, messageForEmpty) {
+    function renderLogs(logs, append, messageForEmpty, highlightTerm = '') {
         const logsRoot = document.getElementById('logsRoot');
 
         console.log(`rendering logs, length ${logs.length}, append ${append}`);
@@ -237,6 +242,11 @@
 
         // Check if the current scroll position is at the top
         const isAtTop = initialScrollTop === 0;
+
+        if (highlightTerm) {
+            const regex = new RegExp(highlightTerm, 'gi');
+            logs = logs.map(log => log.replace(regex, match => `<span class="highlight">${match}</span>`));
+        }
 
         switch (append) {
             case appendValues.NONE:
@@ -318,7 +328,7 @@
 
             if (resp.status <= 299) {
                 console.log('success search');
-                renderLogs(respJson.records, appendValues.NONE, 'Not found');
+                renderLogs(respJson.records, appendValues.NONE, 'Not found', contains);
             } else {
                 const errorMessage = respJson.message || 'Something went wrong';
                 console.log(errorMessage);
