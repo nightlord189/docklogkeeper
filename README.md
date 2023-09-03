@@ -41,6 +41,8 @@ services:
       - docklogkeeper:/logs
     ports:
       - 3010:3010
+    environment:
+      - PASSWORD=MY_COOL_PASSWORD
 
 volumes:
   docklogkeeper:
