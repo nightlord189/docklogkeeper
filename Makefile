@@ -1,31 +1,25 @@
-publish-latest:
+run:
 	docker build --no-cache -t "nightlord189/docklogkeeper:latest" .
-	docker push "nightlord189/docklogkeeper:latest"
-
-publish-version:
-	docker build --no-cache -t "nightlord189/docklogkeeper:$(version)" .
-	docker push "nightlord189/docklogkeeper:$(version)"
-
-build-docker:
-	docker build --no-cache -t "nightlord189/docklogkeeper:latest" .
-
-run-docker:
 	docker stop docklogkeeper || true
 	docker rm docklogkeeper || true
 	docker run --name docklogkeeper -d -v /var/run/docker.sock:/var/run/docker.sock -v docklogkeeper:/logs -p 3010:3010 nightlord189/docklogkeeper:latest
 
-buildg:
-	docker build --no-cache -t "bibgen:latest" ./test/bibgen
 
-rung:
+.PHONY: build
+publish:
+	docker buildx build --no-cache --push \
+      --platform linux/arm64/v8,linux/amd64 \
+      --tag $(image) \
+      .
+
+runbib:
+	docker build --no-cache -t "bibgen:latest" ./test/bibgen
 	docker stop bibgen || true
 	docker rm bibgen || true
 	docker run --name bibgen bibgen:latest
 
-buildg2:
+runrandom:
 	docker build --no-cache -t "randomgen:latest" ./test/randomgen
-
-rung2:
 	docker stop randomgen || true
 	docker rm randomgen || true
 	docker run --name randomgen -d randomgen:latest
