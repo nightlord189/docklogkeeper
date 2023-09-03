@@ -71,3 +71,5 @@ Yes. It's open source and free project. You should run it on your own server.
 + Get realtime log updates via websocket.
 + Search logs by regexp.
 + Automatic past logs loading on scrolling.
++ React on some keyword in logs and send webhook/alert to custom service.
++ Dark mode.
