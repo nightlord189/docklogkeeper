@@ -1,0 +1,27 @@
+name: Publish latest image
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - 'site/**'
+      - '*.md'
+    branches:
+      - master
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Deploy
+        run: make publish image=nightlord189/docklogkeeper:latest

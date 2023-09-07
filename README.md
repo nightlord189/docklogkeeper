@@ -22,7 +22,7 @@ When DockLogKeeper could be right choice for you?
 ## How to use?
 1. Run command below:
     ```
-    docker run --name docklogkeeper --env PASSWORD=YOUR_PASSWORD -d -v /var/run/docker.sock:/var/run/docker.sock -v docklogkeeper:/logs -p 3010:3010 nightlord189/docklogkeeper:1.0.2
+    docker run --name docklogkeeper --env PASSWORD=YOUR_PASSWORD -d -v /var/run/docker.sock:/var/run/docker.sock -v docklogkeeper:/logs -p 3010:3010 nightlord189/docklogkeeper:latest
     ```
 2. Navigate to http://localhost:3010. Authenticate using the username **admin** and the password specified in step 1.
 3. Explore and search your logs via an user-friendly interface.
@@ -35,7 +35,7 @@ version: "3"
 services:
   docklogkeeper:
     container_name: docklogkeeper
-    image: nightlord189/docklogkeeper:1.0.2
+    image: nightlord189/docklogkeeper:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - docklogkeeper:/logs
