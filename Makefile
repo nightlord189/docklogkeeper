@@ -5,12 +5,17 @@ run:
 	docker run --name docklogkeeper -d -v /var/run/docker.sock:/var/run/docker.sock -v docklogkeeper:/logs -p 3010:3010 nightlord189/docklogkeeper:latest
 
 
-.PHONY: build
+.PHONY: publish
+image ?= nightlord189/docklogkeeper:latest
 publish:
-	docker buildx build --no-cache --push \
-      --platform linux/arm64/v8,linux/amd64 \
-      --tag $(image) \
-      .
+	@docker buildx rm multi-platform-builder || true
+	@docker buildx create --use --platform=linux/arm64/v8,linux/amd64 --name multi-platform-builder
+	@docker buildx inspect --bootstrap
+	@docker buildx build --no-cache --push \
+		--platform linux/arm64/v8,linux/amd64 \
+		--tag $(image) \
+		.
+	@docker buildx rm multi-platform-builder
 
 runbib:
 	docker build --no-cache -t "bibgen:latest" ./test/bibgen
