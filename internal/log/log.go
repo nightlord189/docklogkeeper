@@ -10,8 +10,6 @@ import (
 	"time"
 )
 
-const defaultFileName = "1.txt"
-
 func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *bytes.Buffer) {
 	if buf.Len() == 0 {
 		return
@@ -71,8 +69,6 @@ func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *b
 	if err := a.Repo.InsertLogs(logs); err != nil {
 		log.Ctx(ctx).Err(err).Msg("insert logs error")
 	}
-
-	//fmt.Printf("lines count: %d, lastLine: %s\n", len(logs), logs[len(logs)-1].LogText)
 
 	timestampFromLog := getTimestampFromLog(ctx, logs[len(logs)-1].LogText)
 	if timestampFromLog != nil {

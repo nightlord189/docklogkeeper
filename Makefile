@@ -16,13 +16,13 @@ runbib:
 	docker build --no-cache -t "bibgen:latest" ./test/bibgen
 	docker stop bibgen || true
 	docker rm bibgen || true
-	docker run --name bibgen bibgen:latest
+	docker run -d --name bibgen bibgen:latest
 
 runrandom:
 	docker build --no-cache -t "randomgen:latest" ./test/randomgen
 	docker stop randomgen || true
 	docker rm randomgen || true
-	docker run --name randomgen -d randomgen:latest
+	docker run -d --name randomgen -d randomgen:latest
 
 swag:
 	swag init --dir ./cmd/app --parseDependency --parseInternal

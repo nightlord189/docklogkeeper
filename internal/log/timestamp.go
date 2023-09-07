@@ -16,7 +16,7 @@ func (a *Adapter) GetSinceTimestamp(ctx context.Context, containerName string) s
 			newSince := time.Now().Add(-5 * time.Minute)
 			since = &newSince
 		} else {
-			log.Ctx(ctx).Info().Str("short_name", shortName).Time("timestamp", *since).Msg("last timestamp loaded from file")
+			log.Ctx(ctx).Info().Str("short_name", shortName).Time("timestamp", *since).Msg("last timestamp loaded from db")
 		}
 		a.lastTimestamps[shortName] = since
 	}

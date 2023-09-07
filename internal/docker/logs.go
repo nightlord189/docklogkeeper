@@ -4,47 +4,24 @@ import (
 	"bytes"
 	"context"
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/events"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"strings"
-	"time"
 )
 
-func (a *Adapter) listenEvents(ctx context.Context) {
-	ctx2, cancel := context.WithCancel(ctx)
-	defer cancel()
+func (a *Adapter) readLogsOfDyingContainer(ctx context.Context, event *events.Message) {
+	a.updateMutex.Lock()
+	defer a.updateMutex.Unlock()
 
-	eventsChan, errChan := a.cli.Events(ctx2, types.EventsOptions{
-		Since:   time.Now().Format(time.RFC3339),
-		Until:   "",
-		Filters: filters.Args{},
-	})
-
-	log.Ctx(ctx).Debug().Msg("listening events")
-outerLoop:
-	for {
-		select {
-		case event, ok := <-eventsChan:
-			if !ok {
-				return
-			}
-			if event.Type != "container" {
-				continue
-			}
-			log.Ctx(ctx).Info().Interface("event", event).Msg("new docker event")
-			a.update(ctx)
-		case err, ok := <-errChan:
-			if !ok {
-				return
-			}
-			log.Ctx(ctx).Err(err).Msg("error from docker events channel")
-			break outerLoop
-		}
+	containerID := event.Actor.ID
+	containerName := event.Actor.Attributes["name"]
+	if containerName == "" {
+		log.Ctx(ctx).Error().Msgf("name of actor is empty, skipping reading logs of dying container %s", containerID)
+		return
 	}
-
-	log.Ctx(ctx).Debug().Msg("restart listen events")
-	a.listenEvents(ctx)
+	log.Ctx(ctx).Info().Msgf("reading logs of dying container [%s %s]", containerID, containerName)
+	a.readContainerLogs(ctx, containerID, containerName)
 }
 
 func (a *Adapter) update(ctx context.Context) {
@@ -58,6 +35,7 @@ func (a *Adapter) update(ctx context.Context) {
 		zerolog.Ctx(ctx).Err(err).Msg("get containers error")
 		return
 	}
+
 	result := make([]ContainerInfo, 0, len(containers))
 	for _, cont := range containers {
 		if cont.State == "running" {
@@ -82,7 +60,7 @@ func (a *Adapter) readContainerLogs(ctx context.Context, containerID, containerN
 
 	reader, err := a.cli.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
 		ShowStdout: true,
-		ShowStderr: false,
+		ShowStderr: true,
 		Since:      since,
 		Until:      "",
 		Timestamps: true,
