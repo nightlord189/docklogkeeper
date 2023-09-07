@@ -2,7 +2,7 @@ version: "3"
 services:
   docklogkeeper:
     container_name: docklogkeeper
-    image: nightlord189/docklogkeeper:1.0.2
+    image: nightlord189/docklogkeeper:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - docklogkeeper:/logs
