@@ -10,6 +10,51 @@ import (
 	"time"
 )
 
+func (a *Adapter) WriteLine(ctx context.Context, containerName string, line []byte) {
+	shortName := a.GetShortContainerName(containerName)
+
+	//fmt.Println("WriteLine", shortName, string(line))
+
+	ctx = log.Ctx(ctx).With().Str("short_name", shortName).Logger().WithContext(ctx)
+
+	lastTimestamp := a.lastTimestamps[shortName]
+
+	if len(line) < 8 {
+		return
+	}
+	ttFromLog := getTimestampFromLog(ctx, string(line[8:]))
+	if timeGreaterOrEqualNil(lastTimestamp, ttFromLog) { // check also for equal
+		//log.Ctx(ctx).Debug().Msgf("skipping line because timestamp, last_tt: %v, current_tt: %v", lastTimestamp, ttFromLog)
+		return
+	}
+
+	var createdAt time.Time
+	if ttFromLog != nil {
+		createdAt = *ttFromLog
+	} else {
+		createdAt = time.Now()
+	}
+
+	logToInsert := entity.LogDataDB{
+		ContainerName: shortName,
+		LogText:       string(line[8:]),
+		CreatedAt:     createdAt.Unix(),
+	}
+
+	if err := a.Repo.EnsureContainer(shortName); err != nil {
+		log.Ctx(ctx).Err(err).Msg("ensure container in db error")
+	}
+	if err := a.Repo.InsertLog(&logToInsert); err != nil {
+		log.Ctx(ctx).Err(err).Msg("insert log error")
+	}
+
+	timestampFromLog := getTimestampFromLog(ctx, logToInsert.LogText)
+	if timestampFromLog != nil {
+		a.lastTimestamps[shortName] = timestampFromLog
+		//fmt.Println(containerName, "last timestamp", timestampFromLog)
+	}
+}
+
 func (a *Adapter) WriteMessage(ctx context.Context, containerName string, buf *bytes.Buffer) {
 	if buf.Len() == 0 {
 		return

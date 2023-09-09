@@ -6,25 +6,12 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/rs/zerolog"
 	"strings"
-	"time"
 )
 
 func (a *Adapter) Run(ctx context.Context) {
-	regularTicker := time.NewTicker(time.Duration(a.Config.Log.UpdateFrequency) * time.Second)
-
-	go a.listenEvents(ctx)
-
 	a.update(ctx)
-outerLoop:
-	for {
-		select {
-		case <-regularTicker.C:
-			a.update(ctx)
-		case <-ctx.Done():
-			break outerLoop
-		}
-	}
-	zerolog.Ctx(ctx).Info().Msg("stopping docker adapter run")
+
+	a.listenEvents(ctx)
 }
 
 func (a *Adapter) GetAliveContainers(ctx context.Context) ([]string, error) {

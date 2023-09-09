@@ -43,7 +43,7 @@ func main() {
 		stdLog.Fatalf("error on init docker: %v", err)
 	}
 
-	defer dock.Close()
+	defer dock.Close(ctx)
 
 	go dock.Run(ctx)
 
