@@ -15,6 +15,7 @@ type Adapter struct {
 	updateMutex       *sync.Mutex
 	cli               *client.Client
 	containersReading map[string]bool //container_id -> true
+	readingMutex      *sync.RWMutex
 }
 
 func New(ctx context.Context, cfg config.Config, lg *log.Adapter) (*Adapter, error) {
@@ -27,6 +28,7 @@ func New(ctx context.Context, cfg config.Config, lg *log.Adapter) (*Adapter, err
 		LogAdapter:        lg,
 		updateMutex:       &sync.Mutex{},
 		containersReading: make(map[string]bool, 10),
+		readingMutex:      &sync.RWMutex{},
 		cli:               cli,
 	}, nil
 }

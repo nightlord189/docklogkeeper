@@ -41,7 +41,9 @@ func (a *Adapter) update(ctx context.Context) {
 }
 
 func (a *Adapter) ensureReadContainerLogs(ctx context.Context, containerID, containerName string) {
+	a.readingMutex.RLock()
 	_, ok := a.containersReading[containerID]
+	a.readingMutex.RUnlock()
 	if ok {
 		return
 	}
@@ -52,9 +54,15 @@ func (a *Adapter) ensureReadContainerLogs(ctx context.Context, containerID, cont
 func (a *Adapter) readContainerLogs(ctx context.Context, containerID, containerName string) {
 	//fmt.Println("reading container logs", containerName)
 	log.Ctx(ctx).Info().Msgf("start reading logs of container [%s, %s]", containerID, containerName)
+
+	a.readingMutex.Lock()
 	a.containersReading[containerID] = true
+	a.readingMutex.Unlock()
+
 	defer func() {
+		a.readingMutex.Lock()
 		delete(a.containersReading, containerID)
+		a.readingMutex.Unlock()
 	}()
 
 	logger := log.Ctx(ctx).With().Str("container_id", containerID).Str("container_name", containerName).Logger()
