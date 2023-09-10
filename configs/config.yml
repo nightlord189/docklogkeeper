@@ -9,7 +9,6 @@ auth:
   password: keeper43
 
 log:
-  update_frequency: 5
   retention: 604800 #1 week in seconds
 
 db:
