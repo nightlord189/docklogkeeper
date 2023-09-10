@@ -30,8 +30,7 @@ type HTTPConfig struct {
 }
 
 type LogConfig struct {
-	UpdateFrequency int   `yaml:"update_frequency" env:"UPDATE_FREQUENCY"`
-	Retention       int64 `yaml:"retention" env:"LOG_RETENTION"`
+	Retention int64 `yaml:"retention" env:"LOG_RETENTION"`
 }
 
 func LoadConfig(configFilePath string) (Config, error) {

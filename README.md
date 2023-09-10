@@ -60,7 +60,6 @@ You can use following environment variables:
 + LOG_LEVEL - level of logs of DockLogKeeper itself (trace, debug, info, warn, error, fatal, panic, disabled). Default is debug.
 + AUTH_SECRET - secret to encode auth cookies
 + HTTP_PORT - http port (default is 3010)
-+ UPDATE_FREQUENCY - how often DockLogKeeper will check new logs from daemon (in seconds). Default value is 5.
 + LOG_RETENTION - when old logs will be deleted. Default value is 604800 (1 week).
 
 ## FAQ

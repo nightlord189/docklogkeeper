@@ -10,10 +10,12 @@ import (
 )
 
 type Adapter struct {
-	Config      config.Config
-	LogAdapter  *log.Adapter
-	updateMutex *sync.Mutex
-	cli         *client.Client
+	Config            config.Config
+	LogAdapter        *log.Adapter
+	updateMutex       *sync.Mutex
+	cli               *client.Client
+	containersReading map[string]bool //container_id -> true
+	readingMutex      *sync.RWMutex
 }
 
 func New(ctx context.Context, cfg config.Config, lg *log.Adapter) (*Adapter, error) {
@@ -22,10 +24,12 @@ func New(ctx context.Context, cfg config.Config, lg *log.Adapter) (*Adapter, err
 		return nil, err
 	}
 	return &Adapter{
-		Config:      cfg,
-		LogAdapter:  lg,
-		updateMutex: &sync.Mutex{},
-		cli:         cli,
+		Config:            cfg,
+		LogAdapter:        lg,
+		updateMutex:       &sync.Mutex{},
+		containersReading: make(map[string]bool, 10),
+		readingMutex:      &sync.RWMutex{},
+		cli:               cli,
 	}, nil
 }
 
@@ -38,6 +42,8 @@ func getCli(ctx context.Context) (*client.Client, error) {
 	return cli, nil
 }
 
-func (a *Adapter) Close() {
-	a.cli.Close()
+func (a *Adapter) Close(ctx context.Context) {
+	if err := a.cli.Close(); err != nil {
+		zerolog.Ctx(ctx).Err(err).Msg("close docker adapter error")
+	}
 }

@@ -29,9 +29,9 @@ outerLoop:
 			if event.Type != "container" {
 				continue
 			}
-			if event.Action == "die" {
-				log.Ctx(ctx).Info().Msgf("new docker event: %s %s", event.Action, event.Actor.Attributes["name"])
-				a.readLogsOfDyingContainer(ctx, &event)
+			if event.Action == "start" {
+				log.Ctx(ctx).Info().Interface("event", event).Msgf("new docker event: %s %s", event.Action, event.Actor.Attributes["name"])
+				go a.ensureReadContainerLogs(ctx, event.Actor.ID, event.Actor.Attributes["name"])
 			}
 		case err, ok := <-errChan:
 			if !ok {

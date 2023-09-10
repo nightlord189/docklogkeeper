@@ -1,28 +1,12 @@
 package docker
 
 import (
-	"bytes"
+	"bufio"
 	"context"
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/events"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"strings"
 )
-
-func (a *Adapter) readLogsOfDyingContainer(ctx context.Context, event *events.Message) {
-	a.updateMutex.Lock()
-	defer a.updateMutex.Unlock()
-
-	containerID := event.Actor.ID
-	containerName := event.Actor.Attributes["name"]
-	if containerName == "" {
-		log.Ctx(ctx).Error().Msgf("name of actor is empty, skipping reading logs of dying container %s", containerID)
-		return
-	}
-	log.Ctx(ctx).Info().Msgf("reading logs of dying container [%s %s]", containerID, containerName)
-	a.readContainerLogs(ctx, containerID, containerName)
-}
 
 func (a *Adapter) update(ctx context.Context) {
 	a.updateMutex.Lock()
@@ -41,7 +25,7 @@ func (a *Adapter) update(ctx context.Context) {
 		if cont.State == "running" {
 			resultCont := ContainerInfo{
 				ID:   cont.ID,
-				Name: strings.TrimPrefix(cont.Names[0], "/"),
+				Name: trimContainerName(cont.Names),
 			}
 			result = append(result, resultCont)
 		}
@@ -49,13 +33,39 @@ func (a *Adapter) update(ctx context.Context) {
 
 	//fmt.Printf("got containers: %v\n", result)
 
+	log.Ctx(ctx).Info().Interface("containers", result).Msgf("start reading %d already existing containers", len(result))
+
 	for _, cont := range result {
-		a.readContainerLogs(ctx, cont.ID, cont.Name)
+		go a.ensureReadContainerLogs(ctx, cont.ID, cont.Name)
 	}
 }
 
+func (a *Adapter) ensureReadContainerLogs(ctx context.Context, containerID, containerName string) {
+	a.readingMutex.RLock()
+	_, ok := a.containersReading[containerID]
+	a.readingMutex.RUnlock()
+	if ok {
+		return
+	}
+	a.readContainerLogs(ctx, containerID, containerName)
+}
+
+// running in a separate goroutine
 func (a *Adapter) readContainerLogs(ctx context.Context, containerID, containerName string) {
 	//fmt.Println("reading container logs", containerName)
+	log.Ctx(ctx).Info().Msgf("start reading logs of container [%s, %s]", containerID, containerName)
+
+	a.readingMutex.Lock()
+	a.containersReading[containerID] = true
+	a.readingMutex.Unlock()
+
+	defer func() {
+		a.readingMutex.Lock()
+		delete(a.containersReading, containerID)
+		a.readingMutex.Unlock()
+	}()
+
+	logger := log.Ctx(ctx).With().Str("container_id", containerID).Str("container_name", containerName).Logger()
 	since := a.LogAdapter.GetSinceTimestamp(ctx, containerName)
 
 	reader, err := a.cli.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
@@ -64,20 +74,25 @@ func (a *Adapter) readContainerLogs(ctx context.Context, containerID, containerN
 		Since:      since,
 		Until:      "",
 		Timestamps: true,
-		Follow:     false,
+		Follow:     true,
 		Tail:       "",
 		Details:    false,
 	})
 	if err != nil {
-		log.Ctx(ctx).Err(err).Msg("container logs error")
+		logger.Err(err).Msgf("read container logs error [container %s]", containerName)
 		return
 	}
 
-	defer reader.Close()
-	buf := new(bytes.Buffer)
-	if _, err := buf.ReadFrom(reader); err != nil {
-		log.Ctx(ctx).Err(err).Msg("read logs buffer error")
-		return
+	defer func() {
+		if err := reader.Close(); err != nil {
+			logger.Err(err).Msg("close logs reader error")
+		}
+	}()
+
+	buf := bufio.NewScanner(reader)
+
+	for buf.Scan() {
+		a.LogAdapter.WriteLine(ctx, containerName, buf.Bytes())
 	}
-	a.LogAdapter.WriteMessage(ctx, containerName, buf)
+	logger.Debug().Msg("stop reading logs")
 }

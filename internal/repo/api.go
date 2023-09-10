@@ -20,6 +20,10 @@ func (r *Repo) InsertLogs(logs []entity.LogDataDB) error {
 	return r.DB.Create(logs).Error
 }
 
+func (r *Repo) InsertLog(logEntry *entity.LogDataDB) error {
+	return r.DB.Exec(`insert into log (container_name, log_text, created_at) values (?, ?, ?)`, logEntry.ContainerName, logEntry.LogText, logEntry.CreatedAt).Error
+}
+
 func (r *Repo) EnsureContainer(shortName string) error {
 	return r.DB.Exec("insert into container (name) values (?) on conflict do nothing", shortName).Error
 }
