@@ -22,22 +22,25 @@ func (a *Adapter) WriteLine(ctx context.Context, containerName string, line []by
 	if len(line) < 8 {
 		return
 	}
-	ttFromLog := getTimestampFromLog(ctx, string(line[8:]))
-	if timeGreaterOrEqualNil(lastTimestamp, ttFromLog) { // check also for equal
+
+	lineStr := trimMessageHeader(line)
+
+	timestampFromLog := getTimestampFromLog(ctx, lineStr)
+	if timeGreaterOrEqualNil(lastTimestamp, timestampFromLog) { // check also for equal
 		//log.Ctx(ctx).Debug().Msgf("skipping line because timestamp, last_tt: %v, current_tt: %v", lastTimestamp, ttFromLog)
 		return
 	}
 
 	var createdAt time.Time
-	if ttFromLog != nil {
-		createdAt = *ttFromLog
+	if timestampFromLog != nil {
+		createdAt = *timestampFromLog
 	} else {
 		createdAt = time.Now()
 	}
 
 	logToInsert := entity.LogDataDB{
 		ContainerName: shortName,
-		LogText:       string(line[8:]),
+		LogText:       lineStr,
 		CreatedAt:     createdAt.Unix(),
 	}
 
@@ -48,7 +51,6 @@ func (a *Adapter) WriteLine(ctx context.Context, containerName string, line []by
 		log.Ctx(ctx).Err(err).Msg("insert log error")
 	}
 
-	timestampFromLog := getTimestampFromLog(ctx, logToInsert.LogText)
 	if timestampFromLog != nil {
 		a.lastTimestamps[shortName] = timestampFromLog
 		//fmt.Println(containerName, "last timestamp", timestampFromLog)
