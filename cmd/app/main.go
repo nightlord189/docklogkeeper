@@ -31,6 +31,8 @@ func main() {
 
 	zerolog.Ctx(ctx).Debug().Msg("start #2")
 
+	zerolog.Ctx(ctx).Info().Msgf("VERSION: %s", cfg.Version)
+
 	repoInst, err := repo.New(cfg.DB)
 	if err != nil {
 		stdLog.Fatalf("error init repo: %v", err)

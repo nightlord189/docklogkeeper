@@ -1,5 +1,6 @@
 run:
-	docker build --no-cache -t "nightlord189/docklogkeeper:latest" .
+	COMMIT_SHA=$(git rev-parse --short HEAD)
+	docker build --no-cache --build-arg GIT_VERSION=$(COMMIT_SHA) -t "nightlord189/docklogkeeper:latest" .
 	docker stop docklogkeeper || true
 	docker rm docklogkeeper || true
 	docker run --name docklogkeeper -d -v /var/run/docker.sock:/var/run/docker.sock -v docklogkeeper:/logs -p 3010:3010 nightlord189/docklogkeeper:latest
@@ -8,10 +9,12 @@ run:
 .PHONY: publish
 image ?= nightlord189/docklogkeeper:latest
 publish:
+	COMMIT_SHA=$(git rev-parse --short HEAD)
 	@docker buildx rm multi-platform-builder || true
 	@docker buildx create --use --platform=linux/arm64/v8,linux/amd64 --name multi-platform-builder
 	@docker buildx inspect --bootstrap
 	@docker buildx build --no-cache --push \
+		--build-arg GIT_VERSION=$(COMMIT_SHA) \
 		--platform linux/arm64/v8,linux/amd64 \
 		--tag $(image) \
 		.

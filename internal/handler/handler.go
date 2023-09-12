@@ -94,7 +94,7 @@ func (h *Handler) Run() error {
 	})
 
 	router.GET("/logs", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "logs.html", gin.H{})
+		c.HTML(http.StatusOK, "logs.html", TemplateData{Version: h.Config.Version})
 	})
 
 	return router.Run(fmt.Sprintf(":%d", h.Config.HTTP.Port))
