@@ -5,6 +5,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/rs/zerolog/log"
+	"strings"
 	"time"
 )
 
@@ -38,6 +39,9 @@ outerLoop:
 				return
 			}
 			log.Ctx(ctx).Err(err).Msg("error from docker events channel")
+			if strings.Contains(err.Error(), "is too new. Maximum supported API version is") {
+				panic("invalid docker version: " + err.Error())
+			}
 			break outerLoop
 		}
 	}
