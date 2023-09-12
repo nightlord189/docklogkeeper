@@ -9,7 +9,7 @@ run:
 .PHONY: publish
 image ?= nightlord189/docklogkeeper:latest
 publish:
-	COMMIT_SHA=$(git rev-parse --short HEAD)
+	COMMIT_SHA=$(git rev-parse --short "$GITHUB_SHA")
 	@docker buildx rm multi-platform-builder || true
 	@docker buildx create --use --platform=linux/arm64/v8,linux/amd64 --name multi-platform-builder
 	@docker buildx inspect --bootstrap
