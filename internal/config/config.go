@@ -8,7 +8,6 @@ import (
 
 type Config struct {
 	LogLevel string     `yaml:"log_level" env:"LOG_LEVEL"` // trace, debug, info, warn, error, fatal, panic, disabled
-	Version  string     `yaml:"version" env:"VERSION"`
 	Auth     AuthConfig `yaml:"auth"`
 	HTTP     HTTPConfig `yaml:"http"`
 	Log      LogConfig  `yaml:"log"`

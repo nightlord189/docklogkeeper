@@ -1,5 +1,4 @@
 log_level: debug
-version: unknown
 
 http:
   port: 3010

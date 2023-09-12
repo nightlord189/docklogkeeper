@@ -1,21 +1,16 @@
-GIT_VERSION?=$(shell git rev-parse --short HEAD)
 run:
-	@echo "$(GIT_VERSION)"
-	docker build --no-cache --build-arg GIT_VERSION=$(GIT_VERSION) -t "nightlord189/docklogkeeper:latest" .
+	docker build --no-cache -t "nightlord189/docklogkeeper:latest" .
 	docker stop docklogkeeper || true
 	docker rm docklogkeeper || true
 	docker run --name docklogkeeper -d -v /var/run/docker.sock:/var/run/docker.sock -v docklogkeeper:/logs -p 3010:3010 nightlord189/docklogkeeper:latest
 
 .PHONY: publish
 image ?= nightlord189/docklogkeeper:latest
-GIT_VERSION?=$(shell git rev-parse --short HEAD)
 publish:
-	@echo "$(GIT_VERSION)"
 	@docker buildx rm multi-platform-builder || true
 	@docker buildx create --use --platform=linux/arm64/v8,linux/amd64 --name multi-platform-builder
 	@docker buildx inspect --bootstrap
 	@docker buildx build --no-cache \
-		--build-arg GIT_VERSION=$(GIT_VERSION) \
 		--platform linux/arm64/v8,linux/amd64 \
 		--tag $(image) \
 		.
