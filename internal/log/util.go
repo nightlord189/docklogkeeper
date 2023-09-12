@@ -42,9 +42,11 @@ func getTimestampFromLog(ctx context.Context, log string) *time.Time {
 }
 
 func calcShortContainerName(containerName string) string {
-	if strings.Contains(containerName, ".") && !strings.HasPrefix(containerName, ".") {
+	switch {
+	case strings.Contains(containerName, "captain-") && strings.Contains(containerName, "."): // for CapRover
 		splitted := strings.Split(containerName, ".")
 		return splitted[0]
+	default:
+		return containerName
 	}
-	return containerName
 }
