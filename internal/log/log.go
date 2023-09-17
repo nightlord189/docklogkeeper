@@ -36,9 +36,10 @@ func (a *Adapter) WriteLine(ctx context.Context, containerName string, line []by
 	}
 
 	logToInsert := entity.LogDataDB{
-		ContainerName: shortName,
-		LogText:       lineStr,
-		CreatedAt:     createdAt.Unix(),
+		ContainerName:     shortName,
+		ContainerFullName: containerName,
+		LogText:           lineStr,
+		CreatedAt:         createdAt.Unix(),
 	}
 
 	if err := a.Repo.EnsureContainer(shortName); err != nil {
@@ -52,6 +53,12 @@ func (a *Adapter) WriteLine(ctx context.Context, containerName string, line []by
 		a.lastTimestamps[shortName] = timestampFromLog
 		//fmt.Println(containerName, "last timestamp", timestampFromLog)
 	}
+
+	go func() {
+		for i := range a.outputChannels {
+			a.outputChannels[i] <- logToInsert
+		}
+	}()
 }
 
 func (a *Adapter) GetShortContainerName(containerName string) string {

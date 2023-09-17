@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/nightlord189/docklogkeeper/internal/config"
 	"github.com/nightlord189/docklogkeeper/internal/log"
+	"github.com/nightlord189/docklogkeeper/internal/repo"
 	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	"io"
 	"net/http"
@@ -22,12 +23,13 @@ import (
 
 type Handler struct {
 	Config     config.Config
+	Repo       *repo.Repo
 	Usecase    *usecase.Usecase
 	LogAdapter *log.Adapter
 }
 
-func New(cfg config.Config, ucInst *usecase.Usecase, lgAdapter *log.Adapter) *Handler {
-	return &Handler{Config: cfg, Usecase: ucInst, LogAdapter: lgAdapter}
+func New(cfg config.Config, repoInst *repo.Repo, ucInst *usecase.Usecase, lgAdapter *log.Adapter) *Handler {
+	return &Handler{Config: cfg, Repo: repoInst, Usecase: ucInst, LogAdapter: lgAdapter}
 }
 
 func (h *Handler) Run() error {
@@ -80,6 +82,11 @@ func (h *Handler) Run() error {
 	router.GET("/api/container", h.CookieAuthMdw, h.GetContainers)
 	router.GET("/api/container/:shortname/log", h.CookieAuthMdw, h.GetLogs)
 	router.GET("/api/container/:shortname/log/search", h.CookieAuthMdw, h.SearchLogs)
+
+	router.GET("/api/trigger", h.CookieAuthMdw, h.GetTriggers)
+	router.POST("/api/trigger", h.CookieAuthMdw, h.CreateTrigger)
+	router.PUT("/api/trigger/:id", h.CookieAuthMdw, h.UpdateTrigger)
+	router.DELETE("/api/trigger/:id", h.CookieAuthMdw, h.DeleteTrigger)
 
 	htmlPages := []string{
 		"static/web/auth.html",

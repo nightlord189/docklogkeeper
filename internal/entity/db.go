@@ -1,10 +1,11 @@
 package entity
 
 type LogDataDB struct {
-	ID            int64  `gorm:"id"`
-	ContainerName string `gorm:"container_name"`
-	LogText       string `gorm:"log_text"`
-	CreatedAt     int64  `gorm:"created_at"`
+	ID                int64  `gorm:"id"`
+	ContainerName     string `gorm:"container_name"`
+	ContainerFullName string `gorm:"container_full_name"`
+	LogText           string `gorm:"log_text"`
+	CreatedAt         int64  `gorm:"created_at"`
 }
 
 func (LogDataDB) TableName() string {

@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+func (r *Repo) CreateEntity(item interface{}) error {
+	return r.DB.Create(item).Error
+}
+
+func (r *Repo) UpdateEntity(item interface{}) error {
+	return r.DB.Save(item).Error
+}
+
 func (r *Repo) GetMappedName(containerName string) string {
 	var result string
 	r.DB.Raw("SELECT container_name FROM container_mapping WHERE long_name = ?", containerName).Scan(&result)
@@ -38,6 +46,10 @@ from container c
 left join log on log.container_name = c.name
 group by c.name
 having count(log.id) = 0)`).Error
+}
+
+func (r *Repo) DeleteTrigger(id int64) error {
+	return r.DB.Exec(`delete from trigger where id = ?`, id).Error
 }
 
 func (r *Repo) SearchLogs(shortName, like string) ([]entity.LogDataDB, error) {
@@ -82,4 +94,13 @@ func (r *Repo) GetLogs(shortName string, greaterThan bool, cursor int64, limit i
 	query = query.Order("id desc").Limit(limit)
 	err := query.Find(&result).Error
 	return result, err
+}
+
+func (r *Repo) GetTriggers() ([]entity.TriggerDB, error) {
+	var result []entity.TriggerDB
+	err := r.DB.Find(&result).Error
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }

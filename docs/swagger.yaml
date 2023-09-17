@@ -6,11 +6,55 @@ definitions:
       shortName:
         type: string
     type: object
+  entity.TriggerDB:
+    properties:
+      containerName:
+        type: string
+      contains:
+        type: string
+      id:
+        type: integer
+      method:
+        type: string
+      name:
+        type: string
+      notContains:
+        type: string
+      regexp:
+        type: string
+      webhookBody:
+        type: string
+      webhookHeaders:
+        type: string
+      webhookURL:
+        type: string
+    type: object
   handler.AuthRequest:
     properties:
       password:
         type: string
       username:
+        type: string
+    type: object
+  handler.CreateTriggerRequest:
+    properties:
+      containerName:
+        type: string
+      contains:
+        type: string
+      method:
+        type: string
+      name:
+        type: string
+      notContains:
+        type: string
+      regexp:
+        type: string
+      webhookBody:
+        type: string
+      webhookHeaders:
+        type: string
+      webhookURL:
         type: string
     type: object
   handler.GenericResponse:
@@ -24,6 +68,13 @@ definitions:
       containers:
         items:
           $ref: '#/definitions/entity.ContainerInfo'
+        type: array
+    type: object
+  handler.GetTriggersResponse:
+    properties:
+      triggers:
+        items:
+          $ref: '#/definitions/entity.TriggerDB'
         type: array
     type: object
   handler.SearchLogsResponse:
@@ -179,4 +230,111 @@ paths:
             $ref: '#/definitions/handler.GenericResponse'
       tags:
       - log
+  /api/trigger:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GetTriggersResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - trigger
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Input model
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateTriggerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.TriggerDB'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - trigger
+  /api/trigger/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Trigger ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - trigger
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Trigger ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Input model
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/entity.TriggerDB'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.TriggerDB'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
+      tags:
+      - trigger
 swagger: "2.0"

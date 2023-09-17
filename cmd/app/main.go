@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/nightlord189/docklogkeeper/internal/config"
 	docker2 "github.com/nightlord189/docklogkeeper/internal/docker"
+	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"github.com/nightlord189/docklogkeeper/internal/handler"
 	"github.com/nightlord189/docklogkeeper/internal/log"
 	"github.com/nightlord189/docklogkeeper/internal/repo"
+	"github.com/nightlord189/docklogkeeper/internal/trigger"
 	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	pkgLog "github.com/nightlord189/docklogkeeper/pkg/log"
 	"github.com/rs/zerolog"
@@ -36,7 +38,11 @@ func main() {
 		stdLog.Fatalf("error init repo: %v", err)
 	}
 
-	logAdapter := log.New(cfg.Log, repoInst)
+	triggerAdapter := trigger.New(repoInst)
+
+	go triggerAdapter.Run(ctx)
+
+	logAdapter := log.New(cfg.Log, repoInst, []chan entity.LogDataDB{triggerAdapter.LogsChan})
 
 	dock, err := docker2.New(ctx, cfg, logAdapter)
 	if err != nil {
@@ -47,9 +53,9 @@ func main() {
 
 	go dock.Run(ctx)
 
-	usecaseInst := usecase.New(dock, logAdapter)
+	usecaseInst := usecase.New(repoInst, dock, logAdapter, triggerAdapter)
 
-	handlerInst := handler.New(cfg, usecaseInst, logAdapter)
+	handlerInst := handler.New(cfg, repoInst, usecaseInst, logAdapter)
 
 	go func() {
 		ticker := time.NewTicker(10 * time.Minute)

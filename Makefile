@@ -41,10 +41,10 @@ migrate-new:
 	goose -s -dir configs/migrations/local create $(name) sql
 
 migrate:
-	goose -dir configs/migrations/local sqlite3 ./logs.db up
+	goose -dir configs/migrations/local sqlite3 ./logs/logs.db up
 
 migrate-down:
-	goose -dir configs/migrations/local sqlite3 ./logs.db down
+	goose -dir configs/migrations/local sqlite3 ./logs/logs.db down
 
 migrate-reset:
-	goose -dir configs/migrations/local sqlite3 ./logs.db reset
+	goose -dir configs/migrations/local sqlite3 ./logs/logs.db reset
