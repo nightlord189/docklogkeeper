@@ -42,43 +42,6 @@
             color: #333;
         }
 
-        button {
-            background-color: #3f51b5;
-            border: none;
-            color: #fff;
-            padding: 8px 16px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 20px;
-        }
-
-
-        .table-button {
-            margin-top: 0;
-        }
-        button:hover {
-            background-color: #283593;
-        }
-
-        .btn-link {
-            display: inline-block;
-            background-color: #3f51b5;
-            border: none;
-            color: #fff;
-            padding: 8px 16px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-link:hover {
-            background-color: #283593;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -97,7 +60,7 @@
 
         .table-button {
             display: inline-block;
-            background-color: #3f51b5;
+            background-color: #007bff;
             border: none;
             color: #fff;
             padding: 8px 16px;
@@ -107,9 +70,10 @@
             text-decoration: none;
             margin-right: 10px;
         }
-
         .table-button:hover {
-            background-color: #283593;
+            color: #fff;
+            text-decoration: none;
+            background-color: #0365ce;
         }
 
         .table-button:last-child {
@@ -134,7 +98,8 @@
         </div>
 
         <div id="right-block" class="col-10">
-            <a href="/trigger/create" class="btn-link">Create new trigger</a>
+            <br>
+            <a href="/trigger/create" class="btn btn-primary">Create new trigger</a>
             <h3>Triggers</h3>
             <table id="data-table">
                 <tr>
@@ -148,8 +113,8 @@
                     <td>Alert webhook #1</td>
                     <td>postgres</td>
                     <td>
-                        <a class="table-button" data-itemid="0" href="/trigger/0/edit">Edit</a>
-                        <button class="table-button">Delete</button>
+                        <a class="btn btn-primary table-button" data-itemid="0" href="/trigger/0/edit">Edit</a>
+                        <button class="btn btn-primary table-button">Delete</button>
                     </td>
                 </tr>
             </table>
