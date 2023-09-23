@@ -77,6 +77,4 @@ func main() {
 	if err := handlerInst.Run(); err != nil {
 		stdLog.Fatalf("run router error: %v", err)
 	}
-
-	// TODO: regular update of logs
 }
