@@ -13,16 +13,16 @@ const TriggerMethodWebhook = "webhook"
 const DefaultHeaders = `Content-Type:application/json`
 
 type TriggerDB struct {
-	ID             int64  `json:"id" gorm:"id"`
-	Name           string `json:"name" gorm:"trigger_name"`
-	ContainerName  string `json:"containerName" gorm:"container_name"`
-	Contains       string `json:"contains" gorm:"contains"`
-	NotContains    string `json:"notContains" gorm:"not_contains"`
-	Regexp         string `json:"regexp" gorm:"regexp"`
-	Method         string `json:"method" gorm:"method"`
-	WebhookURL     string `json:"webhookURL" gorm:"webhook_url"`
-	WebhookHeaders string `json:"webhookHeaders" gorm:"webhook_headers"`
-	WebhookBody    string `json:"webhookBody" gorm:"webhook_body"`
+	ID             int64  `json:"id" gorm:"column:id"`
+	Name           string `json:"name" gorm:"column:trigger_name"`
+	ContainerName  string `json:"containerName" gorm:"column:container_name"`
+	Contains       string `json:"contains" gorm:"column:contains"`
+	NotContains    string `json:"notContains" gorm:"column:not_contains"`
+	Regexp         string `json:"regexp" gorm:"column:regexp"`
+	Method         string `json:"method" gorm:"column:method"`
+	WebhookURL     string `json:"webhookURL" gorm:"column:webhook_url"`
+	WebhookHeaders string `json:"webhookHeaders" gorm:"column:webhook_headers"`
+	WebhookBody    string `json:"webhookBody" gorm:"column:webhook_body"`
 }
 
 /*

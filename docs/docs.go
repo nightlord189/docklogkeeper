@@ -500,7 +500,7 @@ const docTemplate = `{
         "handler.GetTriggersResponse": {
             "type": "object",
             "properties": {
-                "triggers": {
+                "records": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.TriggerDB"

@@ -72,7 +72,7 @@ definitions:
     type: object
   handler.GetTriggersResponse:
     properties:
-      triggers:
+      records:
         items:
           $ref: '#/definitions/entity.TriggerDB'
         type: array

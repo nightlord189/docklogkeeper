@@ -91,6 +91,7 @@ func (h *Handler) Run() error {
 	htmlPages := []string{
 		"static/web/auth.html",
 		"static/web/logs.html",
+		"static/web/triggers.html",
 	}
 	router.LoadHTMLFiles(htmlPages...)
 
@@ -102,6 +103,10 @@ func (h *Handler) Run() error {
 
 	router.GET("/logs", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "logs.html", gin.H{})
+	})
+
+	router.GET("/triggers", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "triggers.html", gin.H{})
 	})
 
 	return router.Run(fmt.Sprintf(":%d", h.Config.HTTP.Port))

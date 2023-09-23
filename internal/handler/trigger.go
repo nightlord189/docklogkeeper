@@ -22,7 +22,7 @@ func (h *Handler) GetTriggers(c *gin.Context) {
 		log.Ctx(c.Request.Context()).Err(err).Msg("get triggers error")
 		c.JSON(http.StatusInternalServerError, GenericError(err.Error()))
 	}
-	c.JSON(http.StatusOK, GetTriggersResponse{Triggers: triggers})
+	c.JSON(http.StatusOK, GetTriggersResponse{Records: triggers})
 }
 
 // CreateTrigger godoc

@@ -67,5 +67,5 @@ func (r *CreateTriggerRequest) ToDB() entity.TriggerDB {
 }
 
 type GetTriggersResponse struct {
-	Triggers []entity.TriggerDB `json:"triggers"`
+	Records []entity.TriggerDB `json:"records"`
 }
