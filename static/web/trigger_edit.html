@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triggers</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .left-menu {
+            padding-top: 10px;
+            padding-left: 20px;
+            background-color: #f4f4f4;
+            flex: 0 0 20%; /* Fixed width for the left column */
+            overflow-y: auto; /* Enable scrolling for the left column */
+            max-height: 100vh; /* Limit the maximum height to the viewport height */
+        }
+
+        .left-menu a {
+            display: block;
+            margin: 5px 0; /* Reduce vertical margin */
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            background-color: #f4f4f4;
+            padding: 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .nav-menu a {
+            text-decoration: underline;
+            color: #333;
+        }
+
+        .nav-menu a:hover {
+            background-color: #ddd; /* Highlight on hover */
+        }
+
+        #formHeader {
+            margin-top: 20px; /* Adjust margin for the form header */
+        }
+
+        /* Additional styles for the form */
+        .form-container {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid h-100">
+    <div class="row h-100">
+
+        <div id="left-block" class="col-2 left-menu">
+            <h3><a href="/" class="text-primary">DockLogKeeper</a></h3>
+            <!-- Navigation menu below the h3 heading -->
+            <div class="nav-menu">
+                <a href="/logs">Logs</a>
+                <a href="/triggers">Triggers</a>
+                <a id="logoutLink" href="#" class="text-secondary">Logout</a>
+            </div>
+        </div>
+
+        <div id="right-block" class="col-10">
+            <div class="form-container" id="editForm">
+                <h2 id="formHeader">Create new trigger</h2>
+                <form id="triggerForm">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="name" placeholder="Trigger #1">
+                        <label for="containerName">Container's name</label>
+                        <input type="text" class="form-control" id="containerName" placeholder="postgres">
+                    </div>
+                    <div class="form-group">
+                        <h3>Trigger's logic</h3>
+                        <p>Contains, NotContains and Regexp fields are combined with AND. You can fill one or more of these fields.</p>
+                        <label for="contains">Contains</label>
+                        <input type="text" class="form-control" id="contains" placeholder="...error...">
+                        <label for="notContains">Not contains</label>
+                        <input type="text" class="form-control" id="notContains" placeholder="...test error...">
+                        <label for="regexp">Regexp</label>
+                        <input type="text" class="form-control" id="regexp" placeholder="error.?">
+                    </div>
+                    <div class="form-group">
+                        <h3>Reaction logic</h3>
+                        <p>You can use dynamic variables $dlk_container_full_name, $dlk_container_name, $dlk_log, $dlk_timestamp</p>
+                        <label for="webhookUrl">Webhook URL</label>
+                        <input type="text" class="form-control" id="webhookUrl" value="https://example.com/trigger/$dlk_container_name">
+                        <label for="webhookHeaders">Webhook headers</label>
+                        <textarea class="form-control" id="webhookHeaders" rows="2">Authorization:token1;X-Container-Name:$dlk_container_name</textarea>
+                        <label for="webhookBody">Webhook body</label>
+                        <textarea class="form-control" id="webhookBody" rows="6">{
+    "container_name": "$dlk_container_name",
+    "log_text": "$dlk_log",
+    "timestamp": "$dlk_timestamp"
+}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create trigger</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS, Popper.js, and jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="/js/main.js"></script>
+
+</body>
+
+</html>

@@ -92,6 +92,7 @@ func (h *Handler) Run() error {
 		"static/web/auth.html",
 		"static/web/logs.html",
 		"static/web/triggers.html",
+		"static/web/trigger_edit.html",
 	}
 	router.LoadHTMLFiles(htmlPages...)
 
@@ -107,6 +108,14 @@ func (h *Handler) Run() error {
 
 	router.GET("/triggers", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "triggers.html", gin.H{})
+	})
+
+	router.GET("/trigger/create", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "trigger_edit.html", gin.H{})
+	})
+
+	router.GET("/trigger/:id/edit", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "trigger_edit.html", gin.H{})
 	})
 
 	return router.Run(fmt.Sprintf(":%d", h.Config.HTTP.Port))
