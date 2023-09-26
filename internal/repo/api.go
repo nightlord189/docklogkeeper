@@ -96,7 +96,13 @@ func (r *Repo) GetLogs(shortName string, greaterThan bool, cursor int64, limit i
 	return result, err
 }
 
-func (r *Repo) GetTriggers() ([]entity.TriggerDB, error) {
+func (r *Repo) GetTrigger(id int64) (entity.TriggerDB, error) {
+	var result entity.TriggerDB
+	err := r.DB.Where("id = ?", id).First(&result).Error
+	return result, err
+}
+
+func (r *Repo) GetAllTriggers() ([]entity.TriggerDB, error) {
 	var result []entity.TriggerDB
 	err := r.DB.Find(&result).Error
 	if err != nil {

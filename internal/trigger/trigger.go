@@ -13,7 +13,7 @@ const bufferSize = 1000
 type Adapter struct {
 	LogsChan      chan entity.LogDataDB
 	Repo          *repo.Repo
-	triggersCache *sync.Map //container_name -> entity.TriggerDB
+	triggersCache *TriggersCache
 	regexpCache   *sync.Map //regexp string -> regexp.Regexp
 	httpClient    *http.Client
 }
@@ -22,7 +22,7 @@ func New(repoInst *repo.Repo) *Adapter {
 	return &Adapter{
 		Repo:          repoInst,
 		LogsChan:      make(chan entity.LogDataDB, bufferSize),
-		triggersCache: &sync.Map{},
+		triggersCache: NewTriggersCache(),
 		regexpCache:   &sync.Map{},
 		httpClient: &http.Client{
 			Transport:     nil,

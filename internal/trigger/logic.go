@@ -14,20 +14,20 @@ import (
 )
 
 func (a *Adapter) ReloadCache(ctx context.Context) {
-	triggers, err := a.Repo.GetTriggers()
+	triggers, err := a.Repo.GetAllTriggers()
 	if err != nil {
 		log.Ctx(ctx).Err(err).Msg("ReloadCache: get triggers error")
 		return
 	}
 
-	clearSyncMap(a.triggersCache)
+	a.triggersCache.Clear()
 	for _, trig := range triggers {
 		var currentArray []entity.TriggerDB
 		gotValue, ok := a.triggersCache.Load(trig.ContainerName)
 		if !ok {
 			currentArray = make([]entity.TriggerDB, 0, 3)
 		} else {
-			currentArray = gotValue.([]entity.TriggerDB)
+			currentArray = gotValue
 		}
 		currentArray = append(currentArray, trig)
 		a.triggersCache.Store(trig.ContainerName, currentArray)
@@ -67,11 +67,11 @@ func (a *Adapter) Run(ctx context.Context) {
 
 func (a *Adapter) readInput(ctx context.Context, wg *sync.WaitGroup) {
 	for logEntry := range a.LogsChan {
-		gotTriggers, ok := a.triggersCache.Load(logEntry.ContainerName)
-		if !ok {
+		gotTriggers := a.triggersCache.LoadWithAll(logEntry.ContainerName)
+		if len(gotTriggers) == 0 {
 			continue
 		}
-		a.processTriggers(ctx, &logEntry, gotTriggers.([]entity.TriggerDB))
+		a.processTriggers(ctx, &logEntry, gotTriggers)
 	}
 	wg.Done()
 }

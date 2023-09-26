@@ -231,11 +231,25 @@ const docTemplate = `{
                 "tags": [
                     "trigger"
                 ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "trigger ID",
+                        "name": "trigger_id",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/handler.GetTriggersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
                         }
                     },
                     "401": {

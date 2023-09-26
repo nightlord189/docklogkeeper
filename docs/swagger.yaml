@@ -234,6 +234,11 @@ paths:
     get:
       consumes:
       - application/json
+      parameters:
+      - description: trigger ID
+        in: query
+        name: trigger_id
+        type: integer
       produces:
       - application/json
       responses:
@@ -241,6 +246,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/handler.GetTriggersResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.GenericResponse'
         "401":
           description: Unauthorized
           schema:

@@ -5,19 +5,32 @@ import (
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"github.com/rs/zerolog/log"
 	"net/http"
+	"strconv"
 )
 
 // GetTriggers godoc
 // @Tags trigger
 // @Accept  json
 // @Produce json
+// @Param trigger_id query int false "trigger ID"
 // @Success 200 {object} GetTriggersResponse
+// @Failure 400 {object} GenericResponse
 // @Failure 401 {object} GenericResponse
 // @Failure 500 {object} GenericResponse
 // @Router /api/trigger [Get]
 // @BasePath /
 func (h *Handler) GetTriggers(c *gin.Context) {
-	triggers, err := h.Repo.GetTriggers()
+	var triggerID int64
+	triggerIDStr := c.Query("trigger_id")
+	if triggerIDStr != "" {
+		parsed, err := strconv.ParseInt(triggerIDStr, 10, 64)
+		if err != nil {
+			log.Ctx(c.Request.Context()).Err(err).Msg("parse trigger_id error")
+			c.JSON(http.StatusBadRequest, GenericErrorf("invalid trigger_id: %v", err))
+		}
+		triggerID = parsed
+	}
+	triggers, err := h.Usecase.GetTriggers(triggerID)
 	if err != nil {
 		log.Ctx(c.Request.Context()).Err(err).Msg("get triggers error")
 		c.JSON(http.StatusInternalServerError, GenericError(err.Error()))

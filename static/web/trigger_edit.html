@@ -84,13 +84,14 @@
 
         <div id="right-block" class="col-10">
             <div class="form-container" id="editForm">
-                <h2 id="formHeader">Create new trigger</h2>
+                <h1 id="formHeader">Create new trigger</h1>
                 <form id="triggerForm">
                     <div class="form-group">
                         <label for="name">Name</label>
                         <input type="text" class="form-control" id="name" placeholder="Trigger #1">
                         <label for="containerName">Container's name</label>
                         <input type="text" class="form-control" id="containerName" placeholder="postgres">
+                        <small>leave empty to check all containers</small>
                     </div>
                     <div class="form-group">
                         <h3>Trigger's logic</h3>
@@ -116,7 +117,7 @@
     "timestamp": "$dlk_timestamp"
 }</textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">Create trigger</button>
+                    <button id="submitBtn" type="submit" class="btn btn-primary">Create trigger</button>
                 </form>
             </div>
         </div>
@@ -129,6 +130,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script src="/js/main.js"></script>
+<script src="/js/trigger_edit.js"></script>
 
 </body>
 

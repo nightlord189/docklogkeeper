@@ -41,9 +41,6 @@ func (r *TriggerDB) IsValid() error {
 	if r.Name == "" {
 		return fmt.Errorf("name is empty")
 	}
-	if r.ContainerName == "" {
-		return fmt.Errorf("container name is empty")
-	}
 	if r.Contains == "" && r.NotContains == "" && r.Regexp == "" {
 		return fmt.Errorf("all search criteria are empty")
 	}
@@ -63,6 +60,14 @@ func (r *TriggerDB) IsValid() error {
 	}
 	if r.WebhookBody != "" && !json.Valid([]byte(r.WebhookBody)) {
 		return fmt.Errorf("invalid webhook body")
+	}
+
+	splittedHeaders := strings.Split(r.WebhookHeaders, ";")
+	for _, header := range splittedHeaders {
+		splittedHeader := strings.Split(header, ":")
+		if len(splittedHeader) != 2 {
+			return fmt.Errorf("invalid headers")
+		}
 	}
 	return nil
 }
