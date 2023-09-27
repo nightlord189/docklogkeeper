@@ -14,7 +14,7 @@ publish:
 	@docker buildx create --use --platform=linux/arm64/v8,linux/amd64 --name multi-platform-builder
 	@docker buildx inspect --bootstrap
 	@docker buildx build --no-cache \
-		--platform linux/arm64/v8,linux/amd64 \
+		--platform linux/arm64/v8,linux/amd64 --push \
 		--tag $(image) \
 		.
 	@docker buildx rm multi-platform-builder
