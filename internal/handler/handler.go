@@ -2,21 +2,19 @@ package handler
 
 import (
 	"fmt"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
-	"github.com/nightlord189/docklogkeeper/internal/config"
-	"github.com/nightlord189/docklogkeeper/internal/log"
-	"github.com/nightlord189/docklogkeeper/internal/repo"
-	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	"io"
 	"net/http"
 	"time"
 
-	_ "github.com/nightlord189/docklogkeeper/docs"
-
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-
+	_ "github.com/nightlord189/docklogkeeper/docs" // for swagger docs
+	"github.com/nightlord189/docklogkeeper/internal/config"
+	"github.com/nightlord189/docklogkeeper/internal/log"
+	"github.com/nightlord189/docklogkeeper/internal/repo"
+	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -32,6 +30,7 @@ func New(cfg config.Config, repoInst *repo.Repo, ucInst *usecase.Usecase, lgAdap
 	return &Handler{Config: cfg, Repo: repoInst, Usecase: ucInst, LogAdapter: lgAdapter}
 }
 
+//nolint:funlen
 func (h *Handler) Run() error {
 	gin.SetMode(h.Config.HTTP.GinMode)
 	router := gin.New()
@@ -75,7 +74,7 @@ func (h *Handler) Run() error {
 	})
 
 	router.OPTIONS("/", func(c *gin.Context) {
-		c.AbortWithStatus(204)
+		c.AbortWithStatus(http.StatusNoContent)
 	})
 
 	router.POST("/api/auth", h.Auth)

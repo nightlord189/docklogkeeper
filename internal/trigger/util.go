@@ -20,5 +20,6 @@ func (a *Adapter) getRegexpFromCache(regexpStr string) *regexp.Regexp {
 	if !ok {
 		return nil
 	}
+	//nolint:forcetypeassert
 	return gotValue.(*regexp.Regexp)
 }

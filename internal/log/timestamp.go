@@ -2,8 +2,9 @@ package log
 
 import (
 	"context"
-	"github.com/rs/zerolog/log"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (a *Adapter) GetSinceTimestamp(ctx context.Context, containerName string) string {

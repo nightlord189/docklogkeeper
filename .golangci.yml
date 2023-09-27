@@ -1,0 +1,37 @@
+linters:
+  enable-all: true
+  disable:
+    - ineffassign
+    - deadcode
+    - golint
+    - maligned
+    - scopelint
+    - varcheck
+    - nosnakecase
+    - interfacer
+    - exhaustivestruct
+    - structcheck
+    - ifshort
+    - nlreturn
+    - goerr113
+    - depguard
+    - cyclop
+    - wsl
+    - wrapcheck
+    - varnamelen
+    - tagliatelle
+    - exhaustruct
+    - tagalign
+    - godot
+    - gocritic
+    - lll
+    - gomnd
+
+run:
+  skip-dirs:
+    - configs
+    - docs
+    - logs
+    - site
+    - static
+    - test

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 )
 

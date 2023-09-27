@@ -2,6 +2,7 @@ package log
 
 import (
 	"context"
+
 	"github.com/rs/zerolog/log"
 )
 

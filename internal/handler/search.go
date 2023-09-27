@@ -1,10 +1,11 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nightlord189/docklogkeeper/internal/log"
 	"github.com/rs/zerolog"
-	"net/http"
 )
 
 // SearchLogs godoc

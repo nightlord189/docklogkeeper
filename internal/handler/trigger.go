@@ -1,11 +1,12 @@
 package handler
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"github.com/rs/zerolog/log"
-	"net/http"
-	"strconv"
 )
 
 // GetTriggers godoc

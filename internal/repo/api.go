@@ -2,8 +2,9 @@ package repo
 
 import (
 	"fmt"
-	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"time"
+
+	"github.com/nightlord189/docklogkeeper/internal/entity"
 )
 
 func (r *Repo) CreateEntity(item interface{}) error {
@@ -29,7 +30,8 @@ func (r *Repo) InsertLogs(logs []entity.LogDataDB) error {
 }
 
 func (r *Repo) InsertLog(logEntry *entity.LogDataDB) error {
-	return r.DB.Exec(`insert into log (container_name, log_text, created_at) values (?, ?, ?)`, logEntry.ContainerName, logEntry.LogText, logEntry.CreatedAt).Error
+	return r.DB.Exec(`insert into log (container_name, log_text, created_at) values (?, ?, ?)`,
+		logEntry.ContainerName, logEntry.LogText, logEntry.CreatedAt).Error
 }
 
 func (r *Repo) EnsureContainer(shortName string) error {
@@ -53,8 +55,9 @@ func (r *Repo) DeleteTrigger(id int64) error {
 }
 
 func (r *Repo) SearchLogs(shortName, like string) ([]entity.LogDataDB, error) {
-	result := make([]entity.LogDataDB, 0, 100)
-	err := r.DB.Where(`container_name = ? and log_text like ? order by id desc`, shortName, fmt.Sprintf("%%%s%%", like)).Find(&result).Error
+	var result []entity.LogDataDB
+	err := r.DB.Where(`container_name = ? and log_text like ? order by id desc`,
+		shortName, fmt.Sprintf("%%%s%%", like)).Find(&result).Error
 	return result, err
 }
 

@@ -1,3 +1,6 @@
+lint:
+	golangci-lint run --timeout=5m
+
 run:
 	docker build --no-cache -t "nightlord189/docklogkeeper:latest" .
 	docker stop docklogkeeper || true

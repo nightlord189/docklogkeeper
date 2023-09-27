@@ -3,13 +3,14 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"sort"
+
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"github.com/rs/zerolog/log"
-	"sort"
 )
 
 func (u *Usecase) GetContainers(ctx context.Context) ([]entity.ContainerInfo, error) {
-	allContainers, err := u.Log.GetAllContainers(ctx)
+	allContainers, err := u.Repo.GetContainers()
 	if err != nil {
 		log.Ctx(ctx).Err(err).Msg("get all containers error")
 		return nil, fmt.Errorf("get all containers error: %w", err)

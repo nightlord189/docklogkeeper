@@ -2,11 +2,12 @@ package docker
 
 import (
 	"context"
+	"sync"
+
 	"github.com/docker/docker/client"
 	"github.com/nightlord189/docklogkeeper/internal/config"
 	"github.com/nightlord189/docklogkeeper/internal/log"
 	"github.com/rs/zerolog"
-	"sync"
 )
 
 type Adapter struct {
@@ -14,7 +15,7 @@ type Adapter struct {
 	LogAdapter        *log.Adapter
 	updateMutex       *sync.Mutex
 	cli               *client.Client
-	containersReading map[string]bool //container_id -> true
+	containersReading map[string]bool // container_id -> true
 	readingMutex      *sync.RWMutex
 }
 

@@ -2,8 +2,9 @@ package handler
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 func getParamInt64(c *gin.Context, key string) (int64, error) {

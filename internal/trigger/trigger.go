@@ -1,11 +1,12 @@
 package trigger
 
 import (
-	"github.com/nightlord189/docklogkeeper/internal/entity"
-	"github.com/nightlord189/docklogkeeper/internal/repo"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/nightlord189/docklogkeeper/internal/entity"
+	"github.com/nightlord189/docklogkeeper/internal/repo"
 )
 
 const bufferSize = 1000
@@ -14,7 +15,7 @@ type Adapter struct {
 	LogsChan      chan entity.LogDataDB
 	Repo          *repo.Repo
 	triggersCache *TriggersCache
-	regexpCache   *sync.Map //regexp string -> regexp.Regexp
+	regexpCache   *sync.Map // regexp string -> regexp.Regexp
 	httpClient    *http.Client
 }
 

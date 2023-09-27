@@ -21,7 +21,7 @@ func (a *Adapter) GetLogs(req entity.GetLogsRequest) (GetLogsResponse, error) {
 
 	return GetLogsResponse{
 		Records:     lines,
-		FirstCursor: logs[len(logs)-1].ID, //earlier
-		LastCursor:  logs[0].ID,           //later
+		FirstCursor: logs[len(logs)-1].ID, // earlier
+		LastCursor:  logs[0].ID,           // later
 	}, nil
 }

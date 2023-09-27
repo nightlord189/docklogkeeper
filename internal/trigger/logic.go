@@ -3,15 +3,15 @@ package trigger
 import (
 	"bytes"
 	"context"
-	"fmt"
-	"github.com/nightlord189/docklogkeeper/internal/entity"
-	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/nightlord189/docklogkeeper/internal/entity"
+	"github.com/rs/zerolog/log"
 )
 
 const workersCount = 3
@@ -70,7 +70,7 @@ func (a *Adapter) readInput(ctx context.Context, wg *sync.WaitGroup) {
 	for logEntry := range a.LogsChan {
 		gotTriggers := a.triggersCache.LoadWithAll(logEntry.ContainerName)
 		if len(gotTriggers) == 0 {
-			fmt.Printf("no triggers for container %s, continue\n", logEntry.ContainerName)
+			// fmt.Printf("no triggers for container %s, continue\n", logEntry.ContainerName)
 			continue
 		}
 		a.matchTriggers(ctx, &logEntry, gotTriggers)
@@ -79,11 +79,12 @@ func (a *Adapter) readInput(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (a *Adapter) matchTriggers(ctx context.Context, logEntry *entity.LogDataDB, triggers []entity.TriggerDB) {
-	//fmt.Printf("processing %d triggers for container %s, text %s\n", len(triggers), logEntry.ContainerName, logEntry.LogText)
+	// fmt.Printf("processing %d triggers for container %s, text %s\n", len(triggers), logEntry.ContainerName, logEntry.LogText)
 	for _, trig := range triggers {
 		if trig.Match(logEntry.LogText, a.getRegexpFromCache(trig.Regexp)) {
 			log.Ctx(ctx).Info().Msgf("trigger [%d %s] matched with log %s", trig.ID, trig.Name, logEntry.LogText)
-			go a.sendWebhook(ctx, logEntry, &trig)
+			currentTrigger := trig
+			go a.sendWebhook(ctx, logEntry, &currentTrigger)
 		}
 	}
 }
@@ -92,17 +93,19 @@ func (a *Adapter) sendWebhook(ctx context.Context, logEntry *entity.LogDataDB, t
 	rawURL := injectVariables(trigger.WebhookURL, logEntry)
 	rawBody := injectVariables(trigger.WebhookBody, logEntry)
 	rawHeaders := trigger.WebhookHeaders
+
 	if rawHeaders == "" {
 		rawHeaders = entity.DefaultHeaders
+	} else {
+		rawHeaders = injectVariables(trigger.WebhookHeaders, logEntry)
 	}
-	rawHeaders = injectVariables(trigger.WebhookHeaders, logEntry)
 
 	var body io.Reader
 	if rawBody != "" {
-		body = bytes.NewBuffer([]byte(rawBody))
+		body = bytes.NewBufferString(rawBody)
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", rawURL, body)
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, rawURL, body)
 	if err != nil {
 		log.Ctx(ctx).Err(err).Msg("sendWebhook: create http request error")
 		return

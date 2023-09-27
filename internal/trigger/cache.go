@@ -1,12 +1,13 @@
 package trigger
 
 import (
-	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"sync"
+
+	"github.com/nightlord189/docklogkeeper/internal/entity"
 )
 
 type TriggersCache struct {
-	data map[string][]entity.TriggerDB //container_name -> entity.TriggerDB //empty for all
+	data map[string][]entity.TriggerDB // container_name -> entity.TriggerDB //empty for all
 	lock *sync.RWMutex
 }
 

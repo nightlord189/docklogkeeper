@@ -2,16 +2,11 @@ package log
 
 import (
 	"context"
-	"github.com/rs/zerolog"
 	"strings"
 	"time"
-)
 
-func reverseLines(lines []string) {
-	for i, j := 0, len(lines)-1; i < j; i, j = i+1, j-1 {
-		lines[i], lines[j] = lines[j], lines[i] //reverse the slice
-	}
-}
+	"github.com/rs/zerolog"
+)
 
 // trim Docker log message header (8 bytes)
 // see https://ahmet.im/blog/docker-logs-api-binary-format-explained/
@@ -30,7 +25,7 @@ func timeGreaterOrEqualNil(t1, t2 *time.Time) bool {
 func getTimestampFromLog(ctx context.Context, log string) *time.Time {
 	splitted := strings.Split(log, " ")
 	if len(splitted) < 2 {
-		zerolog.Ctx(ctx).Error().Msgf("parse timestamp error: splitted count less than required, log:", log)
+		zerolog.Ctx(ctx).Error().Msgf("parse timestamp error: splitted count less than required, log: %s", log)
 		return nil
 	}
 	timestamp, err := time.Parse(time.RFC3339, splitted[0])

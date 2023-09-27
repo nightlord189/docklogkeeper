@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	stdLog "log"
+	"time"
+
 	"github.com/nightlord189/docklogkeeper/internal/config"
 	docker2 "github.com/nightlord189/docklogkeeper/internal/docker"
 	"github.com/nightlord189/docklogkeeper/internal/entity"
@@ -13,11 +16,15 @@ import (
 	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	pkgLog "github.com/nightlord189/docklogkeeper/pkg/log"
 	"github.com/rs/zerolog"
-	stdLog "log"
-	"time"
+)
+
+const (
+	clearOldLogsPeriod    = 10 * time.Minute
+	pruneContainersPeriod = 30 * time.Minute
 )
 
 func main() {
+	//nolint:forbidigo
 	fmt.Println("start #1")
 
 	cfg, err := config.LoadConfig("configs/config.yml")
@@ -55,28 +62,32 @@ func main() {
 
 	go dock.Run(ctx)
 
+	runJobs(ctx, logAdapter, repoInst)
+
 	usecaseInst := usecase.New(repoInst, dock, logAdapter, triggerAdapter)
 
 	handlerInst := handler.New(cfg, repoInst, usecaseInst, logAdapter)
 
+	if err := handlerInst.Run(); err != nil {
+		stdLog.Fatalf("run router error: %v", err)
+	}
+}
+
+func runJobs(ctx context.Context, logAdapter *log.Adapter, repoInst *repo.Repo) {
 	go func() {
-		ticker := time.NewTicker(10 * time.Minute)
-		logAdapter.ClearOldFiles(ctx)
+		ticker := time.NewTicker(clearOldLogsPeriod)
+		logAdapter.ClearOldLogs(ctx)
 		for range ticker.C {
-			logAdapter.ClearOldFiles(ctx)
+			logAdapter.ClearOldLogs(ctx)
 		}
 	}()
 
 	go func() {
-		ticker := time.NewTicker(30 * time.Minute)
+		ticker := time.NewTicker(pruneContainersPeriod)
 		for range ticker.C {
 			if err := repoInst.DeleteContainersWithoutLogs(); err != nil {
 				zerolog.Ctx(ctx).Err(err).Msg("delete containers without logs error")
 			}
 		}
 	}()
-
-	if err := handlerInst.Run(); err != nil {
-		stdLog.Fatalf("run router error: %v", err)
-	}
 }

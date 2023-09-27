@@ -2,11 +2,12 @@ package docker
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/rs/zerolog/log"
-	"strings"
-	"time"
 )
 
 func (a *Adapter) listenEvents(ctx context.Context) {
@@ -31,7 +32,8 @@ outerLoop:
 				continue
 			}
 			if event.Action == "start" {
-				log.Ctx(ctx).Info().Interface("event", event).Msgf("new docker event: %s %s", event.Action, event.Actor.Attributes["name"])
+				log.Ctx(ctx).Info().Interface("event", event).
+					Msgf("new docker event: %s %s", event.Action, event.Actor.Attributes["name"])
 				go a.ensureReadContainerLogs(ctx, event.Actor.ID, event.Actor.Attributes["name"])
 			}
 		case err, ok := <-errChan:
