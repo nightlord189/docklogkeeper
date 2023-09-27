@@ -219,6 +219,186 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/trigger": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trigger"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "trigger ID",
+                        "name": "trigger_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GetTriggersResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trigger"
+                ],
+                "parameters": [
+                    {
+                        "description": "Input model",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateTriggerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entity.TriggerDB"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/trigger/{id}": {
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trigger"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Trigger ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Input model",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.TriggerDB"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.TriggerDB"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trigger"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Trigger ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GenericResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -233,6 +413,41 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.TriggerDB": {
+            "type": "object",
+            "properties": {
+                "containerName": {
+                    "type": "string"
+                },
+                "contains": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "notContains": {
+                    "type": "string"
+                },
+                "regexp": {
+                    "type": "string"
+                },
+                "webhookBody": {
+                    "type": "string"
+                },
+                "webhookHeaders": {
+                    "type": "string"
+                },
+                "webhookURL": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.AuthRequest": {
             "type": "object",
             "properties": {
@@ -240,6 +455,38 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.CreateTriggerRequest": {
+            "type": "object",
+            "properties": {
+                "containerName": {
+                    "type": "string"
+                },
+                "contains": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "notContains": {
+                    "type": "string"
+                },
+                "regexp": {
+                    "type": "string"
+                },
+                "webhookBody": {
+                    "type": "string"
+                },
+                "webhookHeaders": {
+                    "type": "string"
+                },
+                "webhookURL": {
                     "type": "string"
                 }
             }
@@ -260,6 +507,17 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.ContainerInfo"
+                    }
+                }
+            }
+        },
+        "handler.GetTriggersResponse": {
+            "type": "object",
+            "properties": {
+                "records": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.TriggerDB"
                     }
                 }
             }

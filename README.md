@@ -12,6 +12,7 @@ Simple Docker log viewer. DockLogKeeper offers a streamlined approach to viewing
 - Access logs from any Docker container, regardless of its status (active or terminated).
 - Simple cookie-based authorization.
 - Log rotation: by default, older logs are pruned after a span of 1 week.
+- Triggers - you can easily create simple triggers that will react on some word or regexp in your log and send webhook to your services.
 
 ## Usecase
 When DockLogKeeper could be right choice for you?
@@ -58,21 +59,21 @@ Source code of this repo is [here](https://github.com/nightlord189/caprover-one-
 You can use following environment variables:
 + PASSWORD - admin password. Default is keeper43.
 + LOG_LEVEL - level of logs of DockLogKeeper itself (trace, debug, info, warn, error, fatal, panic, disabled). Default is debug.
-+ AUTH_SECRET - secret to encode auth cookies
-+ HTTP_PORT - http port (default is 3010)
++ AUTH_SECRET - secret to encode auth cookies.
++ HTTP_PORT - http port (default is 3010).
 + LOG_RETENTION - when old logs will be deleted. Default value is 604800 (1 week).
++ ANALYTICS - set to false to disable analytics (default is true).
 
 ## FAQ
 1. Is it free?
 Yes. It's open source and free project. You should run it on your own server.
-2. Does DockLogKeeper send analytics or other data to 3rd parties? Not. However, future releases may incorporate anonymous analytics. Rest assured, DockLogKeeper will never transmit your container data or logs.
+2. Does DockLogKeeper send analytics or other data to 3rd parties? It sends anonymous analytics data to the maintainer's host to analyze popularity of project. Rest assured, DockLogKeeper will never transmit your container data or logs.
 3. Is it well tested? Currently, DockLogKeeper is in its alpha stage. Comprehensive testing is on our roadmap.
 
 ## Enhancement
 + Get realtime log updates via websocket.
 + Search logs by regexp.
 + Automatic past logs loading on scrolling.
-+ React on some keyword in logs and send webhook/alert to custom service.
 + Dark mode.
 + Connect to remote hosts.
 + Tests.

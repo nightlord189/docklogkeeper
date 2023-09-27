@@ -2,21 +2,24 @@ package log
 
 import (
 	"context"
+	"time"
+
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"github.com/rs/zerolog/log"
-	"time"
 )
+
+const minimalLength = 8
 
 func (a *Adapter) WriteLine(ctx context.Context, containerName string, line []byte) {
 	shortName := a.GetShortContainerName(containerName)
 
-	//fmt.Println("WriteLine", shortName, string(line))
+	// fmt.Println("WriteLine", shortName, string(line))
 
 	ctx = log.Ctx(ctx).With().Str("short_name", shortName).Logger().WithContext(ctx)
 
 	lastTimestamp := a.lastTimestamps[shortName]
 
-	if len(line) < 8 {
+	if len(line) < minimalLength {
 		return
 	}
 
@@ -24,7 +27,7 @@ func (a *Adapter) WriteLine(ctx context.Context, containerName string, line []by
 
 	timestampFromLog := getTimestampFromLog(ctx, lineStr)
 	if timeGreaterOrEqualNil(lastTimestamp, timestampFromLog) { // check also for equal
-		//log.Ctx(ctx).Debug().Msgf("skipping line because timestamp, last_tt: %v, current_tt: %v", lastTimestamp, ttFromLog)
+		// log.Ctx(ctx).Debug().Msgf("skipping line because timestamp, last_tt: %v, current_tt: %v", lastTimestamp, ttFromLog)
 		return
 	}
 
@@ -36,9 +39,10 @@ func (a *Adapter) WriteLine(ctx context.Context, containerName string, line []by
 	}
 
 	logToInsert := entity.LogDataDB{
-		ContainerName: shortName,
-		LogText:       lineStr,
-		CreatedAt:     createdAt.Unix(),
+		ContainerName:     shortName,
+		ContainerFullName: containerName,
+		LogText:           lineStr,
+		CreatedAt:         createdAt.Unix(),
 	}
 
 	if err := a.Repo.EnsureContainer(shortName); err != nil {
@@ -50,8 +54,14 @@ func (a *Adapter) WriteLine(ctx context.Context, containerName string, line []by
 
 	if timestampFromLog != nil {
 		a.lastTimestamps[shortName] = timestampFromLog
-		//fmt.Println(containerName, "last timestamp", timestampFromLog)
+		// fmt.Println(containerName, "last timestamp", timestampFromLog)
 	}
+
+	go func() {
+		for i := range a.outputChannels {
+			a.outputChannels[i] <- logToInsert
+		}
+	}()
 }
 
 func (a *Adapter) GetShortContainerName(containerName string) string {

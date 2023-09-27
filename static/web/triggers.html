@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triggers</title>
+    {{ if .Analytics }}
+    <script async src="https://umami.app.tinygreencat.dev/script.js" data-website-id="2e3b7059-0d12-48a3-ad93-3dc9ef38c04d"></script>
+    {{ end }}
+
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .left-menu {
+            padding-top: 10px;
+            padding-left: 20px;
+            background-color: #f4f4f4;
+            flex: 0 0 20%; /* Fixed width for the left column */
+            overflow-y: auto; /* Enable scrolling for the left column */
+            max-height: 100vh; /* Limit the maximum height to the viewport height */
+        }
+
+        .left-menu a {
+            display: block;
+            margin: 5px 0; /* Reduce vertical margin */
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            background-color: #f4f4f4;
+            padding: 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .nav-menu a {
+            text-decoration: underline;
+            color: #333;
+        }
+
+        .nav-menu a:hover {
+            background-color: #ddd; /* Highlight on hover */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f1f1;
+        }
+
+        .table-button {
+            display: inline-block;
+            background-color: #007bff;
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+        .table-button:hover {
+            color: #fff;
+            text-decoration: none;
+            background-color: #0365ce;
+        }
+
+        .table-button:last-child {
+            margin-right: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid h-100">
+    <div class="row h-100">
+
+        <div id="left-block" class="col-2 left-menu">
+            <h3><a href="/" class="text-primary">DockLogKeeper</a></h3>
+            <!-- Navigation menu below the h3 heading -->
+            <div class="nav-menu">
+                <a href="/logs">Logs</a>
+                <a href="/triggers">Triggers</a>
+                <a id="logoutLink" href="#" class="text-secondary">Logout</a>
+            </div>
+        </div>
+
+        <div id="right-block" class="col-10">
+            <br>
+            <a href="/trigger/create" class="btn btn-primary" style="margin-bottom: 10px">Create new trigger</a>
+            <h3>Triggers</h3>
+            <table id="data-table">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Container name</th>
+                    <th>Actions</th>
+                </tr>
+                <!--<tr>
+                    <td>1</td>
+                    <td>Alert webhook #1</td>
+                    <td>postgres</td>
+                    <td>
+                        <a class="btn btn-primary table-button" data-itemid="0" href="/trigger/0/edit">Edit</a>
+                        <button class="btn btn-primary table-button">Delete</button>
+                    </td>
+                </tr>-->
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS, Popper.js, and jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="/js/main.js"></script>
+<script src="/js/triggers.js"></script>
+
+</body>
+
+</html>

@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 const (
@@ -34,7 +35,7 @@ func (h *Handler) Auth(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, GenericError("bad credentials"))
 		return
 	}
-	
+
 	session := sessions.Default(c)
 	session.Set(userKey, defaultUser)
 

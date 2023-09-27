@@ -2,9 +2,18 @@ package repo
 
 import (
 	"fmt"
-	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"time"
+
+	"github.com/nightlord189/docklogkeeper/internal/entity"
 )
+
+func (r *Repo) CreateEntity(item interface{}) error {
+	return r.DB.Create(item).Error
+}
+
+func (r *Repo) UpdateEntity(item interface{}) error {
+	return r.DB.Save(item).Error
+}
 
 func (r *Repo) GetMappedName(containerName string) string {
 	var result string
@@ -21,7 +30,8 @@ func (r *Repo) InsertLogs(logs []entity.LogDataDB) error {
 }
 
 func (r *Repo) InsertLog(logEntry *entity.LogDataDB) error {
-	return r.DB.Exec(`insert into log (container_name, log_text, created_at) values (?, ?, ?)`, logEntry.ContainerName, logEntry.LogText, logEntry.CreatedAt).Error
+	return r.DB.Exec(`insert into log (container_name, log_text, created_at) values (?, ?, ?)`,
+		logEntry.ContainerName, logEntry.LogText, logEntry.CreatedAt).Error
 }
 
 func (r *Repo) EnsureContainer(shortName string) error {
@@ -40,9 +50,14 @@ group by c.name
 having count(log.id) = 0)`).Error
 }
 
+func (r *Repo) DeleteTrigger(id int64) error {
+	return r.DB.Exec(`delete from trigger where id = ?`, id).Error
+}
+
 func (r *Repo) SearchLogs(shortName, like string) ([]entity.LogDataDB, error) {
-	result := make([]entity.LogDataDB, 0, 100)
-	err := r.DB.Where(`container_name = ? and log_text like ? order by id desc`, shortName, fmt.Sprintf("%%%s%%", like)).Find(&result).Error
+	var result []entity.LogDataDB
+	err := r.DB.Where(`container_name = ? and log_text like ? order by id desc`,
+		shortName, fmt.Sprintf("%%%s%%", like)).Find(&result).Error
 	return result, err
 }
 
@@ -82,4 +97,19 @@ func (r *Repo) GetLogs(shortName string, greaterThan bool, cursor int64, limit i
 	query = query.Order("id desc").Limit(limit)
 	err := query.Find(&result).Error
 	return result, err
+}
+
+func (r *Repo) GetTrigger(id int64) (entity.TriggerDB, error) {
+	var result entity.TriggerDB
+	err := r.DB.Where("id = ?", id).First(&result).Error
+	return result, err
+}
+
+func (r *Repo) GetAllTriggers() ([]entity.TriggerDB, error) {
+	var result []entity.TriggerDB
+	err := r.DB.Find(&result).Error
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }

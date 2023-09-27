@@ -3,6 +3,7 @@ package docker
 import (
 	"bufio"
 	"context"
+
 	"github.com/docker/docker/api/types"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -31,7 +32,7 @@ func (a *Adapter) update(ctx context.Context) {
 		}
 	}
 
-	//fmt.Printf("got containers: %v\n", result)
+	// fmt.Printf("got containers: %v\n", result)
 
 	log.Ctx(ctx).Info().Interface("containers", result).Msgf("start reading %d already existing containers", len(result))
 
@@ -52,7 +53,7 @@ func (a *Adapter) ensureReadContainerLogs(ctx context.Context, containerID, cont
 
 // running in a separate goroutine
 func (a *Adapter) readContainerLogs(ctx context.Context, containerID, containerName string) {
-	//fmt.Println("reading container logs", containerName)
+	// fmt.Println("reading container logs", containerName)
 	log.Ctx(ctx).Info().Msgf("start reading logs of container [%s, %s]", containerID, containerName)
 
 	a.readingMutex.Lock()

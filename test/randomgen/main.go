@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/icrowley/fake"
 	"time"
+
+	"github.com/icrowley/fake"
 )
 
 const period = 300 * time.Millisecond

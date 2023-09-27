@@ -7,8 +7,10 @@ import (
 	"time"
 )
 
-const linesBetweenPause = 50
-const pause = 30 * time.Second
+const (
+	linesBetweenPause = 50
+	pause             = 30 * time.Second
+)
 
 func main() {
 	fmt.Println("start")
@@ -21,7 +23,6 @@ func main() {
 
 func printFile() {
 	readFile, err := os.Open("bible.txt")
-
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -2,34 +2,35 @@ package handler
 
 import (
 	"fmt"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
-	"github.com/nightlord189/docklogkeeper/internal/config"
-	"github.com/nightlord189/docklogkeeper/internal/log"
-	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	"io"
 	"net/http"
 	"time"
 
-	_ "github.com/nightlord189/docklogkeeper/docs"
-
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-
+	_ "github.com/nightlord189/docklogkeeper/docs" // for swagger docs
+	"github.com/nightlord189/docklogkeeper/internal/config"
+	"github.com/nightlord189/docklogkeeper/internal/log"
+	"github.com/nightlord189/docklogkeeper/internal/repo"
+	"github.com/nightlord189/docklogkeeper/internal/usecase"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Handler struct {
 	Config     config.Config
+	Repo       *repo.Repo
 	Usecase    *usecase.Usecase
 	LogAdapter *log.Adapter
 }
 
-func New(cfg config.Config, ucInst *usecase.Usecase, lgAdapter *log.Adapter) *Handler {
-	return &Handler{Config: cfg, Usecase: ucInst, LogAdapter: lgAdapter}
+func New(cfg config.Config, repoInst *repo.Repo, ucInst *usecase.Usecase, lgAdapter *log.Adapter) *Handler {
+	return &Handler{Config: cfg, Repo: repoInst, Usecase: ucInst, LogAdapter: lgAdapter}
 }
 
+//nolint:funlen
 func (h *Handler) Run() error {
 	gin.SetMode(h.Config.HTTP.GinMode)
 	router := gin.New()
@@ -73,7 +74,7 @@ func (h *Handler) Run() error {
 	})
 
 	router.OPTIONS("/", func(c *gin.Context) {
-		c.AbortWithStatus(204)
+		c.AbortWithStatus(http.StatusNoContent)
 	})
 
 	router.POST("/api/auth", h.Auth)
@@ -81,20 +82,39 @@ func (h *Handler) Run() error {
 	router.GET("/api/container/:shortname/log", h.CookieAuthMdw, h.GetLogs)
 	router.GET("/api/container/:shortname/log/search", h.CookieAuthMdw, h.SearchLogs)
 
+	router.GET("/api/trigger", h.CookieAuthMdw, h.GetTriggers)
+	router.POST("/api/trigger", h.CookieAuthMdw, h.CreateTrigger)
+	router.PUT("/api/trigger/:id", h.CookieAuthMdw, h.UpdateTrigger)
+	router.DELETE("/api/trigger/:id", h.CookieAuthMdw, h.DeleteTrigger)
+
 	htmlPages := []string{
 		"static/web/auth.html",
 		"static/web/logs.html",
+		"static/web/triggers.html",
+		"static/web/trigger_edit.html",
 	}
 	router.LoadHTMLFiles(htmlPages...)
 
 	router.Static("/js", "static/web/js")
 
 	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "auth.html", gin.H{})
+		c.HTML(http.StatusOK, "auth.html", TemplateData{Analytics: h.Config.Analytics})
 	})
 
 	router.GET("/logs", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "logs.html", gin.H{})
+		c.HTML(http.StatusOK, "logs.html", TemplateData{Analytics: h.Config.Analytics})
+	})
+
+	router.GET("/triggers", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "triggers.html", TemplateData{Analytics: h.Config.Analytics})
+	})
+
+	router.GET("/trigger/create", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "trigger_edit.html", TemplateData{Analytics: h.Config.Analytics})
+	})
+
+	router.GET("/trigger/:id/edit", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "trigger_edit.html", TemplateData{Analytics: h.Config.Analytics})
 	})
 
 	return router.Run(fmt.Sprintf(":%d", h.Config.HTTP.Port))

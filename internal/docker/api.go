@@ -3,9 +3,10 @@ package docker
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/docker/docker/api/types"
 	"github.com/rs/zerolog"
-	"strings"
 )
 
 func (a *Adapter) Run(ctx context.Context) {
