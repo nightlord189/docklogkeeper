@@ -12,6 +12,7 @@ Simple Docker log viewer. DockLogKeeper offers a streamlined approach to viewing
 - Access logs from any Docker container, regardless of its status (active or terminated).
 - Simple cookie-based authorization.
 - Log rotation: by default, older logs are pruned after a span of 1 week.
+- Triggers - you can easily create simple triggers that will react on some word or regexp in your log and send webhook to your services.
 
 ## Usecase
 When DockLogKeeper could be right choice for you?
@@ -73,7 +74,6 @@ Yes. It's open source and free project. You should run it on your own server.
 + Get realtime log updates via websocket.
 + Search logs by regexp.
 + Automatic past logs loading on scrolling.
-+ React on some keyword in logs and send webhook/alert to custom service.
 + Dark mode.
 + Connect to remote hosts.
 + Tests.
