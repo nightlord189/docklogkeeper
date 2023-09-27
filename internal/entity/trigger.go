@@ -44,8 +44,8 @@ func (r *TriggerDB) IsValid() error {
 	if r.Contains == "" && r.NotContains == "" && r.Regexp == "" {
 		return fmt.Errorf("all search criteria are empty")
 	}
-	if r.Contains == r.NotContains {
-		return fmt.Errorf("contains and not contains values are empty")
+	if r.Contains == r.NotContains && r.Contains != "" {
+		return fmt.Errorf("contains and not contains values are equal")
 	}
 	if r.Regexp != "" {
 		if _, err := regexp.Compile(r.Regexp); err != nil {
@@ -82,5 +82,5 @@ func (r *TriggerDB) Match(logText string, reg *regexp.Regexp) bool {
 	if r.Regexp != "" && reg != nil {
 		return reg.MatchString(logText)
 	}
-	return false
+	return true
 }

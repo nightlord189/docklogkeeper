@@ -3,6 +3,7 @@ package trigger
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 	"github.com/rs/zerolog/log"
 	"io"
@@ -69,14 +70,16 @@ func (a *Adapter) readInput(ctx context.Context, wg *sync.WaitGroup) {
 	for logEntry := range a.LogsChan {
 		gotTriggers := a.triggersCache.LoadWithAll(logEntry.ContainerName)
 		if len(gotTriggers) == 0 {
+			fmt.Printf("no triggers for container %s, continue\n", logEntry.ContainerName)
 			continue
 		}
-		a.processTriggers(ctx, &logEntry, gotTriggers)
+		a.matchTriggers(ctx, &logEntry, gotTriggers)
 	}
 	wg.Done()
 }
 
-func (a *Adapter) processTriggers(ctx context.Context, logEntry *entity.LogDataDB, triggers []entity.TriggerDB) {
+func (a *Adapter) matchTriggers(ctx context.Context, logEntry *entity.LogDataDB, triggers []entity.TriggerDB) {
+	//fmt.Printf("processing %d triggers for container %s, text %s\n", len(triggers), logEntry.ContainerName, logEntry.LogText)
 	for _, trig := range triggers {
 		if trig.Match(logEntry.LogText, a.getRegexpFromCache(trig.Regexp)) {
 			log.Ctx(ctx).Info().Msgf("trigger [%d %s] matched with log %s", trig.ID, trig.Name, logEntry.LogText)
@@ -99,7 +102,7 @@ func (a *Adapter) sendWebhook(ctx context.Context, logEntry *entity.LogDataDB, t
 		body = bytes.NewBuffer([]byte(rawBody))
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, rawURL, rawURL, body)
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", rawURL, body)
 	if err != nil {
 		log.Ctx(ctx).Err(err).Msg("sendWebhook: create http request error")
 		return
