@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const workersCount = 3
+
 func (a *Adapter) ReloadCache(ctx context.Context) {
 	triggers, err := a.Repo.GetAllTriggers()
 	if err != nil {
@@ -52,8 +54,6 @@ func (a *Adapter) ReloadCache(ctx context.Context) {
 
 	log.Ctx(ctx).Debug().Msg("triggers cache reloaded")
 }
-
-const workersCount = 3
 
 func (a *Adapter) Run(ctx context.Context) {
 	a.ReloadCache(ctx)
