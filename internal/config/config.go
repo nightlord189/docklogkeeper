@@ -7,11 +7,12 @@ import (
 )
 
 type Config struct {
-	LogLevel string     `yaml:"log_level" env:"LOG_LEVEL"` // trace, debug, info, warn, error, fatal, panic, disabled
-	Auth     AuthConfig `yaml:"auth"`
-	HTTP     HTTPConfig `yaml:"http"`
-	Log      LogConfig  `yaml:"log"`
-	DB       DBConfig   `yaml:"db"`
+	LogLevel  string     `yaml:"log_level" env:"LOG_LEVEL"` // trace, debug, info, warn, error, fatal, panic, disabled
+	Analytics bool       `yaml:"analytics" env:"ANALYTICS"`
+	Auth      AuthConfig `yaml:"auth"`
+	HTTP      HTTPConfig `yaml:"http"`
+	Log       LogConfig  `yaml:"log"`
+	DB        DBConfig   `yaml:"db"`
 }
 
 type DBConfig struct {

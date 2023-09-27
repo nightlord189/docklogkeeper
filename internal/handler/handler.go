@@ -99,23 +99,23 @@ func (h *Handler) Run() error {
 	router.Static("/js", "static/web/js")
 
 	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "auth.html", gin.H{})
+		c.HTML(http.StatusOK, "auth.html", TemplateData{Analytics: h.Config.Analytics})
 	})
 
 	router.GET("/logs", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "logs.html", gin.H{})
+		c.HTML(http.StatusOK, "logs.html", TemplateData{Analytics: h.Config.Analytics})
 	})
 
 	router.GET("/triggers", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "triggers.html", gin.H{})
+		c.HTML(http.StatusOK, "triggers.html", TemplateData{Analytics: h.Config.Analytics})
 	})
 
 	router.GET("/trigger/create", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "trigger_edit.html", gin.H{})
+		c.HTML(http.StatusOK, "trigger_edit.html", TemplateData{Analytics: h.Config.Analytics})
 	})
 
 	router.GET("/trigger/:id/edit", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "trigger_edit.html", gin.H{})
+		c.HTML(http.StatusOK, "trigger_edit.html", TemplateData{Analytics: h.Config.Analytics})
 	})
 
 	return router.Run(fmt.Sprintf(":%d", h.Config.HTTP.Port))

@@ -5,6 +5,10 @@ import (
 	"github.com/nightlord189/docklogkeeper/internal/entity"
 )
 
+type TemplateData struct {
+	Analytics bool
+}
+
 type SearchLogsRequest struct {
 	Contains string `form:"contains"`
 }

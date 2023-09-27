@@ -58,14 +58,15 @@ Source code of this repo is [here](https://github.com/nightlord189/caprover-one-
 You can use following environment variables:
 + PASSWORD - admin password. Default is keeper43.
 + LOG_LEVEL - level of logs of DockLogKeeper itself (trace, debug, info, warn, error, fatal, panic, disabled). Default is debug.
-+ AUTH_SECRET - secret to encode auth cookies
-+ HTTP_PORT - http port (default is 3010)
++ AUTH_SECRET - secret to encode auth cookies.
++ HTTP_PORT - http port (default is 3010).
 + LOG_RETENTION - when old logs will be deleted. Default value is 604800 (1 week).
++ ANALYTICS - set to false to disable analytics (default is true).
 
 ## FAQ
 1. Is it free?
 Yes. It's open source and free project. You should run it on your own server.
-2. Does DockLogKeeper send analytics or other data to 3rd parties? Not. However, future releases may incorporate anonymous analytics. Rest assured, DockLogKeeper will never transmit your container data or logs.
+2. Does DockLogKeeper send analytics or other data to 3rd parties? It sends anonymous analytics data to the maintainer's host to analyze popularity of project. Rest assured, DockLogKeeper will never transmit your container data or logs.
 3. Is it well tested? Currently, DockLogKeeper is in its alpha stage. Comprehensive testing is on our roadmap.
 
 ## Enhancement
