@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"github.com/rs/zerolog/log"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 func (h *Handler) CookieAuthMdw(c *gin.Context) {
