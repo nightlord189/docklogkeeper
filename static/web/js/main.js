@@ -25,8 +25,33 @@ function arraysOfObjectsAreEqual(arr1, arr2) {
     return true;
 }
 
+function getCookie(cookieKey) {
+    // Split the cookies string into an array of individual cookies
+    const cookiesArray = document.cookie.split('; ');
+
+    // Iterate over each cookie to find the one with the specified key
+    for (const cookie of cookiesArray) {
+        const [key, value] = cookie.split('=');
+
+        // Trim any leading or trailing spaces
+        const trimmedKey = key.trim();
+
+        // Check if the current cookie's key matches the specified key
+        if (trimmedKey === cookieKey) {
+            // Return the corresponding value
+            return decodeURIComponent(value);
+        }
+    }
+
+    // Return null if the cookie with the specified key is not found
+    return null;
+}
+
 function isAuthorized () {
-    return document.cookie.startsWith('default=') && document.cookie !== 'default='
+    //console.log('raw cookie: ', document.cookie)
+    const defaultCookie = getCookie('default')
+    //console.log('defaultCookie: ', defaultCookie)
+    return defaultCookie !== null && defaultCookie.trim() !== ''
 }
 
 function logout () {

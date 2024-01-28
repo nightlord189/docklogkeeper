@@ -19,7 +19,7 @@ import (
 func (h *Handler) GetContainers(c *gin.Context) {
 	containers, err := h.Usecase.GetContainers(c.Request.Context())
 	if err != nil {
-		log.Ctx(c.Request.Context()).Err(err).Msg("get containers error")
+		log.Ctx(c.Request.Context()).Err(err).Msg("getContainers api: get containers error")
 		c.JSON(http.StatusInternalServerError, GenericError(err.Error()))
 	}
 	c.JSON(http.StatusOK, GetContainersResponse{Containers: containers})

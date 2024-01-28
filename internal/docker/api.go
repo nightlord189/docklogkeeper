@@ -3,10 +3,10 @@ package docker
 import (
 	"context"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"strings"
 
 	"github.com/docker/docker/api/types"
-	"github.com/rs/zerolog"
 )
 
 func (a *Adapter) Run(ctx context.Context) {
@@ -20,7 +20,7 @@ func (a *Adapter) GetAliveContainers(ctx context.Context) ([]string, error) {
 		All: true,
 	})
 	if err != nil {
-		zerolog.Ctx(ctx).Err(err).Msg("get containers error")
+		log.Ctx(ctx).Err(err).Msg("GetAliveContainers: get containers error")
 		return nil, fmt.Errorf("get containers error: %w", err)
 	}
 	result := make([]string, 0, len(containers))

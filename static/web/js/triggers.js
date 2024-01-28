@@ -1,6 +1,6 @@
 window.onload = function() {
     if (!isAuthorized()) {
-        console.log('user is not authorized');
+        console.log('triggers: user is not authorized, redirecting to auth page');
         window.location.href = '/';
     }
 };

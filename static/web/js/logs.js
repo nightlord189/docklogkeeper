@@ -28,7 +28,7 @@ async function setCurrentContainer (newVal) {
 
 window.onload = function() {
     if (!isAuthorized()) {
-        console.log('user is not authorized');
+        console.log('logs: user is not authorized, redirecting to auth page');
         window.location.href = '/';
     }
 };
@@ -98,6 +98,9 @@ async function updateContainers () {
         if (resp.status <= 299) {
             console.log('success get containers');
             renderContainers(respJson.containers);
+        } else if (resp.status === 401) {
+            console.log('401, redirecting to auth page')
+            logout()
         } else {
             const errorMessage = respJson.message || 'Something went wrong';
             console.log(errorMessage);
@@ -182,6 +185,9 @@ async function getLogs (dir, cursor) {
             console.log(`got logs for container ${currentContainer} cursor ${cursor}`);
 
             return respJson;
+        } else if (resp.status === 401) {
+            console.log('401, redirecting to auth page')
+            logout()
         } else {
             const errorMessage = respJson.message || 'Something went wrong';
             console.log(errorMessage);
@@ -206,6 +212,9 @@ async function search (contains) {
         if (resp.status <= 299) {
             console.log('success search');
             renderLogs(respJson.records, appendValues.NONE, 'Not found', contains);
+        } else if (resp.status === 401) {
+            console.log('401, redirecting to auth page')
+            logout()
         } else {
             const errorMessage = respJson.message || 'Something went wrong';
             console.log(errorMessage);

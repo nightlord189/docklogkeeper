@@ -17,7 +17,7 @@ func (a *Adapter) update(ctx context.Context) {
 		All: true,
 	})
 	if err != nil {
-		zerolog.Ctx(ctx).Err(err).Msg("get containers error")
+		zerolog.Ctx(ctx).Err(err).Msg("docker.update: get containers error")
 		return
 	}
 
